@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp"
+    android:height="76dp"
+    android:viewportWidth="360"
+    android:viewportHeight="76">
+    <!-- Subtle Drop Shadow Path -->
+    <path
+        android:fillColor="#0C000000"
+        android:pathData="M 0,15 Q 0,14 1,14 Q 5,14 10,14 H 130 C 145,14 150,-1 180,-1 C 210,-1 215,14 230,14 H 350 Q 355,14 359,14 Q 360,14 360,15 V 76 H 0 Z" />
+    <!-- Solid White Custom Bottom Nav Bar with central dome curve -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 0,16 C 0,10.5 4.5,16 10,16 H 130 C 145,16 150,0 180,0 C 210,0 215,16 230,16 H 350 C 355.5,16 360,10.5 360,16 V 76 H 0 Z" />
+</vector>

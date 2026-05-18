@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Custom attributes for EditText hint -->
+    <declare-styleable name="CustomEditText">
+        <attr name="hint" format="string" />
+        <attr name="hintTextColor" format="color" />
+    </declare-styleable>
+
+    <!-- Theme color attributes used across layouts -->
+    <attr name="colorBackground" format="color" />
+    <attr name="colorOnBackground" format="color" />
+    <attr name="colorSurface" format="color" />
+    <attr name="colorOnSurface" format="color" />
+    <attr name="colorSurfaceVariant" format="color" />
+    <attr name="colorOnET" format="color" />
+
+    <attr name="colorPrimary" format="color" />
+    <attr name="colorPrimaryVariant" format="color" />
+    <attr name="colorOnPrimary" format="color" />
+
+    <attr name="colorError" format="color" />
+    <attr name="colorOnError" format="color" />
+
+    <!-- Helpers -->
+    <attr name="colorOnSurfaceVariant" format="color" />
+    <attr name="colorOnPrimaryVariant" format="color" />
+</resources>

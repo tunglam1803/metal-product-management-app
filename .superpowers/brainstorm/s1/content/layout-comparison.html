@@ -1,0 +1,532 @@
+<h2>Nâng Cấp Giao Diện Danh Sách Sản Phẩm</h2>
+<p class="subtitle">So sánh giao diện hiện tại với thiết kế đề xuất dựa trên ảnh chụp màn hình của bạn.</p>
+
+<style>
+  /* Base layout custom styles */
+  .mobile-mockup {
+    background: #ffffff;
+    border: 12px solid #2d2d2f;
+    border-radius: 36px;
+    width: 100%;
+    max-width: 360px;
+    height: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  
+  .mock-status-bar {
+    height: 24px;
+    background: #f5f5f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 11px;
+    color: #86868b;
+    font-weight: 500;
+  }
+
+  /* Current UI Styles */
+  .current-header {
+    background: linear-gradient(135deg, #2E7D32, #43A047);
+    color: white;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .current-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .current-header-title {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .current-overview-card {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    margin: -12px 12px 0 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    z-index: 2;
+  }
+  .overview-item {
+    text-align: center;
+    flex: 1;
+  }
+  .overview-item .val {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2E7D32;
+    margin-top: 4dp;
+  }
+  .overview-divider {
+    width: 1px;
+    background: #eeeeee;
+    height: 30px;
+    align-self: center;
+  }
+  .current-search {
+    margin: 12px;
+    background: #F5F5F5;
+    border: 1px solid #eeeeee;
+    border-radius: 20px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #757575;
+  }
+  .current-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+  }
+  .current-item {
+    background: white;
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .current-item-img {
+    width: 48px;
+    height: 48px;
+    background: #eeeeee;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: #bdbdbd;
+  }
+  .current-item-info {
+    flex: 1;
+  }
+  .current-item-name {
+    font-size: 13px;
+    font-weight: bold;
+    color: #212121;
+  }
+  .current-item-code {
+    font-size: 11px;
+    color: #757575;
+  }
+  .current-item-price-badge {
+    background: #E8F5E9;
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #2E7D32;
+  }
+
+  /* Proposed UI Styles (Matching Screenshot) */
+  .prop-search-bar {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 8px;
+    background: #ffffff;
+  }
+  .prop-back-btn {
+    font-size: 20px;
+    color: #555;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .prop-search-input-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #f1f3f4;
+    border-radius: 8px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  .prop-search-icon {
+    font-size: 14px;
+    color: #757575;
+  }
+  .prop-search-input {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    outline: none;
+    flex: 1;
+    color: #212121;
+  }
+  .prop-scan-icon {
+    font-size: 16px;
+    color: #757575;
+    cursor: pointer;
+  }
+  .prop-action-icon {
+    font-size: 18px;
+    color: #555;
+    cursor: pointer;
+    padding: 4px;
+  }
+  
+  .prop-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    background: #ffffff;
+  }
+  .prop-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 13px;
+    color: #757575;
+    font-weight: 500;
+    position: relative;
+  }
+  .prop-tab.active {
+    color: #2E7D32;
+    font-weight: bold;
+  }
+  .prop-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: #2E7D32;
+    border-radius: 3px 3px 0 0;
+  }
+  
+  .prop-filters {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    gap: 8px;
+    overflow-x: auto;
+    background: #ffffff;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .prop-filter-pill {
+    white-space: nowrap;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    background: #f1f3f4;
+    color: #5f6368;
+    border: 1px solid transparent;
+  }
+  .prop-filter-pill.active {
+    background: #ffffff;
+    color: #1a73e8;
+    border: 1px solid #1a73e8;
+    font-weight: 500;
+  }
+  .prop-filter-grid-icon {
+    margin-left: auto;
+    padding: 4px;
+    color: #1a73e8;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+  }
+
+  .prop-list {
+    flex: 1;
+    overflow-y: auto;
+    background: #f8f9fa;
+    padding: 8px 12px;
+  }
+  .prop-item {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .prop-item-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    background: #f1f3f4;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .prop-item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .prop-item-img-placeholder {
+    width: 24px;
+    height: 24px;
+    opacity: 0.3;
+  }
+  .prop-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .prop-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #202124;
+    line-height: 1.3;
+  }
+  .prop-item-unit {
+    font-size: 11px;
+    color: #70757a;
+  }
+  .prop-item-price {
+    font-size: 13px;
+    font-weight: bold;
+    color: #e65100;
+    margin-top: 2px;
+  }
+  .prop-item-share {
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a73e8;
+    cursor: pointer;
+  }
+  .prop-item-share svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  .prop-fab {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    background: #2979FF;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(41, 121, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+  }
+
+  /* Split mockup adjustments */
+  .mockup-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+</style>
+
+<div class="split">
+  <!-- MOCKUP 1: CURRENT UI -->
+  <div>
+    <div class="mobile-mockup">
+      <!-- Status bar -->
+      <div class="mock-status-bar">
+        <span>09:15</span>
+        <span style="letter-spacing: 1px;">📶 🔋</span>
+      </div>
+      
+      <!-- Green Header -->
+      <div class="current-header">
+        <div class="current-header-top">
+          <span style="font-size: 18px;">🏠</span>
+          <span class="current-header-title">Quản Lý Sản Phẩm</span>
+          <span style="font-size: 16px;">🚪</span>
+        </div>
+        <div style="font-size: 12px; margin-top: 10px; opacity: 0.8;">Chào admin 👋</div>
+      </div>
+      
+      <!-- Overview Card -->
+      <div class="current-overview-card">
+        <div class="overview-item">
+          <div style="font-size: 10px; color: #757575;">Số Sản Phẩm</div>
+          <div class="val">84</div>
+        </div>
+        <div class="overview-divider"></div>
+        <div class="overview-item">
+          <div style="font-size: 10px; color: #757575;">Cập nhật</div>
+          <div style="font-size: 12px; font-weight: bold; color: #212121; margin-top: 4px;">Hôm nay</div>
+        </div>
+      </div>
+      
+      <!-- Search -->
+      <div class="current-search">
+        🔍 Tìm tên, mã sản phẩm...
+      </div>
+      
+      <!-- Current List -->
+      <div class="current-list">
+        <div class="current-item">
+          <div class="current-item-img">📦</div>
+          <div class="current-item-info">
+            <div class="current-item-name">Máy cưa pin 12" to</div>
+            <div class="current-item-code">Mã: MC-12T</div>
+          </div>
+          <div class="current-item-price-badge">2.100.000đ</div>
+        </div>
+        <div class="current-item">
+          <div class="current-item-img">📦</div>
+          <div class="current-item-info">
+            <div class="current-item-name">Mũi khoan đa năng 6mailin</div>
+            <div class="current-item-code">Mã: MK-6ML</div>
+          </div>
+          <div class="current-item-price-badge">30.000đ</div>
+        </div>
+        <div class="current-item">
+          <div class="current-item-img">📦</div>
+          <div class="current-item-info">
+            <div class="current-item-name">Gong cửa mạ kẽm 1.7 kg</div>
+            <div class="current-item-code">Mã: GC-17</div>
+          </div>
+          <div class="current-item-price-badge">50.000đ</div>
+        </div>
+      </div>
+      
+      <!-- Current FAB -->
+      <div style="position: absolute; bottom: 16px; right: 16px; width: 48px; height: 48px; background: #2E7D32; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 3px 6px rgba(0,0,0,0.16);">+</div>
+    </div>
+    <div class="mockup-desc">🔴 GIAO DIỆN HIỆN TẠI (Green Header, Card Overview)</div>
+  </div>
+
+  <!-- MOCKUP 2: PROPOSED NEW UI -->
+  <div>
+    <div class="mobile-mockup">
+      <!-- Status bar -->
+      <div class="mock-status-bar">
+        <span>09:15</span>
+        <span style="letter-spacing: 1px;">📶 🔋</span>
+      </div>
+      
+      <!-- Top Search Bar -->
+      <div class="prop-search-bar">
+        <div class="prop-back-btn">←</div>
+        <div class="prop-search-input-container">
+          <span class="prop-search-icon">🔍</span>
+          <input class="prop-search-input" value="Tìm tên, mã SKU, ..." disabled>
+          <span class="prop-scan-icon">[II]</span>
+        </div>
+        <span class="prop-action-icon">⇄</span>
+        <span class="prop-action-icon">⋮≡</span>
+      </div>
+      
+      <!-- Tabs -->
+      <div class="prop-tabs">
+        <div class="prop-tab active">Sản phẩm</div>
+        <div class="prop-tab">Tồn kho</div>
+        <div class="prop-tab">Bán kèm</div>
+        <div class="prop-tab">Danh mục</div>
+      </div>
+      
+      <!-- Filter pills -->
+      <div class="prop-filters">
+        <div class="prop-filter-pill active">Tất cả</div>
+        <div class="prop-filter-pill">Đồ máy</div>
+        <div class="prop-filter-pill">Phụ kiện sửa chữa</div>
+        <div class="prop-filter-grid-icon">㗊</div>
+      </div>
+      
+      <!-- Proposed List -->
+      <div class="prop-list">
+        <!-- Item 1 -->
+        <div class="prop-item">
+          <div class="prop-item-img">
+            <div class="placeholder-img" style="background:#e8eaed; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#5f6368; font-size:24px;">🪚</div>
+          </div>
+          <div class="prop-item-info">
+            <div class="prop-item-title">Máy cưa pin 12" to</div>
+            <div class="prop-item-unit">Bộ</div>
+            <div class="prop-item-price">2.100.000 đ</div>
+          </div>
+          <div class="prop-item-share">
+            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7L15.9 7.54c.54.51 1.26.83 2.1.83 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.78 9 5.9 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.88 0 1.6-.31 2.14-.81l7.98 4.67c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+          </div>
+        </div>
+        <!-- Item 2 -->
+        <div class="prop-item">
+          <div class="prop-item-img">
+            <div class="placeholder-img" style="background:#e8eaed; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#5f6368; font-size:24px;">🌀</div>
+          </div>
+          <div class="prop-item-info">
+            <div class="prop-item-title">Mũi khoan đa năng 6mailin</div>
+            <div class="prop-item-unit">Bộ</div>
+            <div class="prop-item-price">30.000 đ</div>
+          </div>
+          <div class="prop-item-share">
+            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7L15.9 7.54c.54.51 1.26.83 2.1.83 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.78 9 5.9 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.88 0 1.6-.31 2.14-.81l7.98 4.67c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+          </div>
+        </div>
+        <!-- Item 3 -->
+        <div class="prop-item">
+          <div class="prop-item-img">
+            <div class="placeholder-img" style="background:#e8eaed; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#5f6368; font-size:24px;">🔧</div>
+          </div>
+          <div class="prop-item-info">
+            <div class="prop-item-title">Gong cửa mạ kẽm 1.7 kg / bộ</div>
+            <div class="prop-item-unit">Bộ</div>
+            <div class="prop-item-price">50.000 đ</div>
+          </div>
+          <div class="prop-item-share">
+            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7L15.9 7.54c.54.51 1.26.83 2.1.83 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.78 9 5.9 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.88 0 1.6-.31 2.14-.81l7.98 4.67c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Proposed FAB -->
+      <div class="prop-fab">+</div>
+    </div>
+    <div class="mockup-desc">🟢 ĐỀ XUẤT GIAO DIỆN MỚI (Từ ảnh chụp màn hình của bạn)</div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem;">
+  <h3>Lựa chọn hướng phát triển:</h3>
+  <div class="options">
+    <div class="option" data-choice="full-ui" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Toàn diện theo ảnh chụp màn hình (Khuyên dùng)</h3>
+        <p>Thiết kế lại Toolbar trên cùng, thêm 4 Tabs ("Sản phẩm", "Tồn kho", "Bán kèm", "Danh mục"), thanh lọc filter pills dạng scroll ngang và đổi kiểu hiển thị danh sách sản phẩm (ảnh bo tròn, đơn vị tính, nút Chia sẻ) sạch sẽ, sang trọng hơn.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="list-only" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Chỉ thay đổi thiết kế danh sách sản phẩm (Item layout)</h3>
+        <p>Giữ nguyên header hiện tại nhưng cập nhật thiết kế của từng sản phẩm trong danh sách theo kiểu mới (ảnh bên trái, đơn vị tính, giá cam đậm, nút chia sẻ bên phải).</p>
+      </div>
+    </div>
+    <div class="option" data-choice="custom" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Tùy biến khác</h3>
+        <p>Vui lòng mô tả thêm yêu cầu riêng của bạn trong terminal.</p>
+      </div>
+    </div>
+  </div>
+</div>

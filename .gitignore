@@ -1,0 +1,26 @@
+*.iml
+.gradle/
+build/
+**/build/
+/local.properties
+local.properties
+
+# Android Studio / IntelliJ files
+.idea/
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/captures
+.externalNativeBuild
+.cxx
+
+# Secret keys and credentials - DO NOT COMMIT
+secrets.properties
+app/google-services.json
+*.jks
+*.keystore
+key.properties

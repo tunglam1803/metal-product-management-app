@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary colors (Dark Mode variants) -->
+    <color name="colorPrimary">#81C784</color>
+    <color name="colorOnPrimary">#003910</color>
+    <color name="colorPrimaryContainer">#1B5E20</color>
+    <color name="colorOnPrimaryContainer">#A5D6A7</color>
+    <color name="colorPrimaryDark">#1B5E20</color>
+
+    <!-- Secondary colors -->
+    <color name="colorSecondary">#A5D6A7</color>
+    <color name="colorOnSecondary">#003910</color>
+
+    <!-- Background / Surface (True Dark) -->
+    <color name="colorBackground">#121212</color>
+    <color name="colorOnBackground">#E0E0E0</color>
+    <color name="colorSurface">#1E1E1E</color>
+    <color name="colorOnSurface">#E0E0E0</color>
+
+    <!-- Headers and Gradients -->
+    <color name="headerGreenStart">#1B5E20</color>
+    <color name="headerGreenEnd">#2E7D32</color>
+
+    <!-- UI Elements Dark -->
+    <color name="card_bg">#1E1E1E</color>
+    <color name="divider">#333333</color>
+    <color name="text_primary">#E0E0E0</color>
+    <color name="text_secondary">#9E9E9E</color>
+    <color name="text_hint">#616161</color>
+
+    <!-- Legacy Accents Dark -->
+    <color name="teal_700">#4DB6AC</color>
+    <color name="teal_200">#80CBC4</color>
+</resources>

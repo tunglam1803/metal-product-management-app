@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:id="@+id/tv_category_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.0"
+            android:layout_marginRight="12dp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif" />
+
+        <ImageButton
+            android:id="@+id/btn_edit_category"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginRight="8dp"
+            android:src="@android:drawable/ic_menu_edit"
+            android:tint="#1A73E8"
+            android:background="@drawable/bg_btn_edit_circle"
+            android:padding="8dp" />
+
+        <ImageButton
+            android:id="@+id/btn_delete_category"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@android:drawable/ic_menu_delete"
+            android:tint="#D93025"
+            android:background="@drawable/bg_btn_delete_circle"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp" />
+
+</LinearLayout>

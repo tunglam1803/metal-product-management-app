@@ -1,0 +1,80 @@
+<h2>Làm rõ các tính năng trên Toolbar Tìm kiếm & Header</h2>
+<p class="subtitle">Hãy lựa chọn cách hoạt động của các nút chức năng mới trên thanh tìm kiếm và vị trí nút Đăng xuất.</p>
+
+<style>
+  .interactive-preview {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .toolbar-demo {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 8px;
+    margin-top: 10px;
+  }
+</style>
+
+<div class="interactive-preview">
+  <h3>Demo mô phỏng Toolbar mới:</h3>
+  <div class="toolbar-demo">
+    <span style="font-size: 18px; color: #555;">←</span>
+    <div style="flex: 1; display: flex; align-items: center; background: #f1f3f4; border-radius: 8px; padding: 6px 10px; gap: 6px;">
+      <span style="color:#757575;">🔍</span>
+      <span style="font-size: 13px; color: #999; flex:1;">Tìm tên, mã SKU, ...</span>
+      <span style="font-size: 16px; color: #757575;">[II]</span>
+    </div>
+    <span style="font-size: 18px; color: #555;">⇄</span>
+    <span style="font-size: 18px; color: #555;">㗊</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="label">Câu hỏi 2: Vị trí của nút Đăng xuất & Lời chào</div>
+  <p class="subtitle">Giao diện cũ có nút Đăng xuất và lời chào "Chào admin" ở phần màu xanh lá. Giao diện mới sẽ loại bỏ phần màu xanh này.</p>
+  
+  <div class="options" data-choice-group="logout-pos">
+    <div class="option" data-choice="move-to-settings" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Chuyển Đăng xuất/Lời chào sang tab "Cài đặt" (Khuyên dùng)</h3>
+        <p>Giống các ứng dụng chuyên nghiệp, tab "Hàng hóa" chỉ tập trung tìm kiếm và hiển thị sản phẩm. Lời chào và nút Đăng xuất sẽ được thiết kế đẹp mắt trong tab "Cài đặt" (MoreFragment).</p>
+      </div>
+    </div>
+    <div class="option" data-choice="keep-on-toolbar" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Giữ nút Đăng xuất ngay trên Toolbar tìm kiếm</h3>
+        <p>Thêm một icon Đăng xuất ở góc phải Toolbar tìm kiếm để người dùng có thể đăng xuất nhanh từ màn hình chính.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem;">
+  <div class="label">Câu hỏi 3: Các nút chức năng (Quét mã, Sắp xếp, Chuyển lưới)</div>
+  <p class="subtitle">Bạn muốn lập trình hoạt động thực tế của các nút này như thế nào?</p>
+  
+  <div class="options" data-choice-group="features">
+    <div class="option" data-choice="static-placeholders" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Tập trung vào Giao diện và Tìm kiếm trước (Khuyên dùng)</h3>
+        <p>Làm giao diện mới cực chuẩn, hỗ trợ Tìm kiếm theo Tên/Mã. Các nút quét mã, sắp xếp, đổi dạng lưới sẽ hiển thị đẹp mắt dưới dạng tĩnh (báo "Tính năng đang phát triển" khi bấm).</p>
+      </div>
+    </div>
+    <div class="option" data-choice="full-features" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Lập trình hoạt động thực tế cho tất cả các nút</h3>
+        <p>Bấm nút ⇄ sẽ mở hộp thoại sắp xếp sản phẩm; bấm 㗊 sẽ chuyển đổi danh sách giữa dạng lưới (2 cột) và dạng hàng (1 cột); bấm quét mã vạch sẽ mở camera để quét.</p>
+      </div>
+    </div>
+  </div>
+</div>

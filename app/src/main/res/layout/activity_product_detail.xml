@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorBackground">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorSurface"
+        app:title="Chi Tiết Sản Phẩm"
+        app:titleCentered="true"
+        app:titleTextColor="@color/colorOnSurface"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/colorOnSurface"
+        app:elevation="0dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+        
+        <!-- Main Details Container Card mirroring reference aesthetic -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/colorSurface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Expanded Product Image Container -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardImageContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/divider">
+
+                        <ImageView
+                            android:id="@+id/imgPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@android:drawable/ic_menu_gallery"
+                            android:background="@color/divider" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Float camera action on the bottom right corner -->
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/btnPickImage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginBottom="-10dp"
+                        android:src="@android:drawable/ic_menu_camera"
+                        app:fabCustomSize="42dp"
+                        app:elevation="6dp"
+                        app:tint="@android:color/white"
+                        app:backgroundTint="#2196F3"
+                        android:contentDescription="Đổi ảnh" />
+                </FrameLayout>
+
+                <!-- Label status under image optionally -->
+                <TextView
+                    android:id="@+id/tvUploadStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="20dp"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_hint"
+                    android:text="Nhấn camera để chọn ảnh" />
+
+                <!-- Product Code Form Group -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mã sản phẩm"
+                        android:textColor="@color/teal_700"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <EditText
+                            android:id="@+id/etProductCode"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:hint="Nhập hoặc quét mã sản phẩm"
+                            android:inputType="text"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:background="@drawable/edit_text_background"
+                            android:textColor="?attr/colorOnBackground"
+                            android:textColorHint="@color/teal_200" />
+
+                        <ImageButton
+                            android:id="@+id/btnScanCode"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_btn_edit_circle"
+                            android:src="@android:drawable/ic_menu_camera"
+                            app:tint="#1A73E8"
+                            android:contentDescription="Quét mã vạch" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Product Name Form Group -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tên sản phẩm *"
+                        android:textColor="@color/teal_700"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp" />
+
+                    <EditText
+                        android:id="@+id/etProductName"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="Nhập tên sản phẩm"
+                        android:inputType="text"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:background="@drawable/edit_text_background"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textColorHint="@color/teal_200" />
+                </LinearLayout>
+
+                <!-- Category Form Group -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Danh mục sản phẩm"
+                        android:textColor="@color/teal_700"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp" />
+
+                    <Spinner
+                        android:id="@+id/spCategory"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/edit_text_background"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp" />
+                </LinearLayout>
+
+                <!-- Pricing Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <!-- Import Price -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Giá nhập"
+                            android:textColor="@color/teal_700"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="4dp" />
+
+                        <EditText
+                            android:id="@+id/etImportPrice"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:hint="0"
+                            android:inputType="numberDecimal"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:background="@drawable/edit_text_background"
+                            android:textColor="?attr/colorOnBackground"
+                            android:textColorHint="@color/teal_200"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Sell Price -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginStart="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Giá bán"
+                            android:textColor="@color/teal_700"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="4dp" />
+
+                        <EditText
+                            android:id="@+id/etSellPrice"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:hint="0"
+                            android:inputType="numberDecimal"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:background="@drawable/edit_text_background"
+                            android:textColor="#FF5722"
+                            android:textColorHint="@color/teal_200"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Buttons Section outside the card -->
+        <android.widget.Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Lưu Sản Phẩm"
+            android:textColor="@android:color/white"
+            android:background="@drawable/btn_primary"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="12dp" />
+
+        <android.widget.Button
+            android:id="@+id/btnViewHistory"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Xem lịch sử thay đổi giá"
+            android:textColor="@color/teal_700"
+            android:background="@android:color/transparent"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:visibility="gone" />
+    </LinearLayout>
+    </ScrollView>
+</LinearLayout>
