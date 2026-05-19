@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ImageButton;
-import android.graphics.Color;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -169,10 +168,10 @@ public class DashboardFragment extends Fragment {
         Button btnAdd = dialogView.findViewById(R.id.btn_add_category);
         LinearLayout listLayout = dialogView.findViewById(R.id.ll_categories_list);
 
+        // Resolve primary text color for theme-aware dialogs
         TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         int textColorPrimary = typedValue.data;
-        boolean isDarkMode = (textColorPrimary == Color.WHITE || (textColorPrimary & 0xFFFFFF) == 0xFFFFFF);
         int dividerColor = ContextCompat.getColor(context, R.color.divider);
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(context)

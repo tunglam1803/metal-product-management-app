@@ -463,10 +463,10 @@ public class HomeFragment extends Fragment {
             }
 
             // Tab Filtering
-            if (currentTab == 1 && (p.getStock_quantity() == null || p.getStock_quantity() <= 0)) {
+            if (currentTab == 1 && p.getStock_quantity() <= 0) {
                 continue; // Tồn kho tab: only show items with stock > 0
             }
-            if (currentTab == 2 && (p.getIs_bundle() == null || !p.getIs_bundle())) {
+            if (currentTab == 2 && !p.getIs_bundle()) {
                 continue; // Bán kèm tab: only show items that are bundles
             }
 
@@ -706,11 +706,10 @@ public class HomeFragment extends Fragment {
         Button btnAdd = dialogView.findViewById(R.id.btn_add_category);
         LinearLayout listLayout = dialogView.findViewById(R.id.ll_categories_list);
 
-        // Resolve primary text color lightness for theme-based divider color
+        // Resolve primary text color for theme-aware dialogs
         TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         int textColorPrimary = typedValue.data;
-        boolean isDarkMode = (textColorPrimary == Color.WHITE || (textColorPrimary & 0xFFFFFF) == 0xFFFFFF);
         int dividerColor = ContextCompat.getColor(context, R.color.divider);
 
         // Tạo dialog
