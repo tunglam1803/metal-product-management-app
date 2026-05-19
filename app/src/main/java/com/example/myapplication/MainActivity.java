@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
+import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -54,8 +55,7 @@ public class MainActivity extends AppCompatActivity {
                             lookupProductAndNavigate(barcode);
                         }
                     }
-                }
-        );
+                });
 
         View btnScanGlobal = findViewById(R.id.btnScanGlobal);
         btnScanGlobal.setOnClickListener(v -> {
@@ -117,8 +117,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateTabStyles(int activeTabId) {
         // Reset all to inactive state
-        int inactiveColor = 0xFF757575;
-        int activeColor = 0xFF8B5CF6;
+        int inactiveColor = ContextCompat.getColor(this, R.color.bottomNavInactive);
+        int activeColor = ContextCompat.getColor(this, R.color.bottomNavActive);
 
         ivTabDashboard.setColorFilter(inactiveColor);
         ivTabHome.setColorFilter(inactiveColor);
@@ -173,11 +173,13 @@ public class MainActivity extends AppCompatActivity {
                         Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
                         intent.putExtra("PRODUCT_CODE", scannedCode);
                         startActivity(intent);
-                        Toast.makeText(MainActivity.this, "Sản phẩm chưa tồn tại. Nhập mới với mã: " + scannedCode, Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Sản phẩm chưa tồn tại. Nhập mới với mã: " + scannedCode,
+                                Toast.LENGTH_LONG).show();
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(MainActivity.this, "Lỗi tìm kiếm sản phẩm: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Lỗi tìm kiếm sản phẩm: " + e.getMessage(), Toast.LENGTH_SHORT)
+                            .show();
                 });
     }
 

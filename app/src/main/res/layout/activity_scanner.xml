@@ -15,11 +15,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Semi-transparent overlay to dim outside boundaries -->
+    <!-- Semi-transparent overlay -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#99000000" />
+        android:background="#88000000" />
 
     <!-- Center transparent viewport container -->
     <FrameLayout
@@ -32,7 +32,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Viewport clear background trick -->
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -44,7 +43,7 @@
             android:id="@+id/v_laser"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:background="#00FF00" />
+            android:background="#A29BFE" />
     </FrameLayout>
 
     <!-- Back button -->

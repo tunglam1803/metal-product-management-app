@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:background="#F5F5F5">
+    android:background="@color/colorBackground">
 
     <!-- Fragment Content Container -->
     <FrameLayout
@@ -52,16 +52,16 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_home"
-                    app:tint="#8B5CF6" />
+                    app:tint="@color/bottomNavActive" />
 
                 <TextView
                     android:id="@+id/tv_tab_dashboard"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
                     android:text="Trang chủ"
-                    android:textColor="#8B5CF6"
-                    android:textSize="11sp"
+                    android:textColor="@color/bottomNavActive"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     android:fontFamily="sans-serif-medium" />
             </LinearLayout>
@@ -83,16 +83,16 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_goods"
-                    app:tint="#757575" />
+                    app:tint="@color/bottomNavInactive" />
 
                 <TextView
                     android:id="@+id/tv_tab_home"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
                     android:text="Hàng hóa"
-                    android:textColor="#757575"
-                    android:textSize="11sp"
+                    android:textColor="@color/bottomNavInactive"
+                    android:textSize="10sp"
                     android:fontFamily="sans-serif" />
             </LinearLayout>
 
@@ -119,16 +119,16 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_reports"
-                    app:tint="#757575" />
+                    app:tint="@color/bottomNavInactive" />
 
                 <TextView
                     android:id="@+id/tv_tab_reports"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
                     android:text="Báo cáo"
-                    android:textColor="#757575"
-                    android:textSize="11sp"
+                    android:textColor="@color/bottomNavInactive"
+                    android:textSize="10sp"
                     android:fontFamily="sans-serif" />
             </LinearLayout>
 
@@ -149,16 +149,16 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_settings"
-                    app:tint="#757575" />
+                    app:tint="@color/bottomNavInactive" />
 
                 <TextView
                     android:id="@+id/tv_tab_more"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
                     android:text="Cài đặt"
-                    android:textColor="#757575"
-                    android:textSize="11sp"
+                    android:textColor="@color/bottomNavInactive"
+                    android:textSize="10sp"
                     android:fontFamily="sans-serif" />
             </LinearLayout>
         </LinearLayout>
@@ -168,12 +168,12 @@
     <!-- Floating Scan Button positioned perfectly over the dome -->
     <androidx.cardview.widget.CardView
         android:id="@+id/btnScanGlobal"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
         android:layout_marginBottom="32dp"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="6dp"
-        app:cardBackgroundColor="#8B5CF6"
+        app:cardCornerRadius="29dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

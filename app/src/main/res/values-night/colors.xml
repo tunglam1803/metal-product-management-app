@@ -3,35 +3,73 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Primary colors (Dark Mode variants) -->
-    <color name="colorPrimary">#81C784</color>
-    <color name="colorOnPrimary">#003910</color>
-    <color name="colorPrimaryContainer">#1B5E20</color>
-    <color name="colorOnPrimaryContainer">#A5D6A7</color>
-    <color name="colorPrimaryDark">#1B5E20</color>
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- Premium Design System – Dark Mode              -->
+    <!-- ═══════════════════════════════════════════════ -->
 
-    <!-- Secondary colors -->
-    <color name="colorSecondary">#A5D6A7</color>
-    <color name="colorOnSecondary">#003910</color>
+    <!-- Primary: Bright Indigo-Violet -->
+    <color name="colorPrimary">#A29BFE</color>
+    <color name="colorOnPrimary">#1A1A2E</color>
+    <color name="colorPrimaryContainer">#2D2B55</color>
+    <color name="colorOnPrimaryContainer">#E8E0FF</color>
+    <color name="colorPrimaryDark">#1A1A2E</color>
 
-    <!-- Background / Surface (True Dark) -->
-    <color name="colorBackground">#121212</color>
-    <color name="colorOnBackground">#E0E0E0</color>
-    <color name="colorSurface">#1E1E1E</color>
-    <color name="colorOnSurface">#E0E0E0</color>
+    <!-- Secondary: Teal -->
+    <color name="colorSecondary">#6EE7B7</color>
+    <color name="colorOnSecondary">#1A1A2E</color>
+
+    <!-- Background / Surface (Rich Dark) -->
+    <color name="colorBackground">#0F0F1A</color>
+    <color name="colorOnBackground">#E5E7EB</color>
+    <color name="colorSurface">#1A1A2E</color>
+    <color name="colorOnSurface">#E5E7EB</color>
+    <color name="colorSurfaceVariant">#252542</color>
 
     <!-- Headers and Gradients -->
-    <color name="headerGreenStart">#1B5E20</color>
-    <color name="headerGreenEnd">#2E7D32</color>
+    <color name="headerGreenStart">#2D2B55</color>
+    <color name="headerGreenEnd">#6C5CE7</color>
 
     <!-- UI Elements Dark -->
-    <color name="card_bg">#1E1E1E</color>
-    <color name="divider">#333333</color>
-    <color name="text_primary">#E0E0E0</color>
-    <color name="text_secondary">#9E9E9E</color>
-    <color name="text_hint">#616161</color>
+    <color name="card_bg">#1A1A2E</color>
+    <color name="divider">#2D2B55</color>
+    <color name="text_primary">#E5E7EB</color>
+    <color name="text_secondary">#9CA3AF</color>
+    <color name="text_hint">#6B7280</color>
 
     <!-- Legacy Accents Dark -->
-    <color name="teal_700">#4DB6AC</color>
-    <color name="teal_200">#80CBC4</color>
+    <color name="teal_700">#A29BFE</color>
+    <color name="teal_200">#6C5CE7</color>
+
+    <!-- Accent Colors -->
+    <color name="colorAccentBlue">#818CF8</color>
+    <color name="colorPriceOrange">#FB923C</color>
+    <color name="colorTabActive">#A29BFE</color>
+    <color name="colorPillActiveBorder">#A29BFE</color>
+    <color name="colorPillInactiveBg">#252542</color>
+    <color name="colorPillActiveBg">#2D2B55</color>
+    <color name="colorTextDark">#E5E7EB</color>
+    <color name="colorTextGrey">#9CA3AF</color>
+    <color name="colorShareBorder">#374151</color>
+
+    <!-- New Premium Accent Colors -->
+    <color name="colorSuccess">#34D399</color>
+    <color name="colorWarning">#FBBF24</color>
+    <color name="colorDanger">#F87171</color>
+    <color name="colorInfo">#60A5FA</color>
+
+    <!-- Card Accent Backgrounds (subtle tints) -->
+    <color name="cardAccentPurple">#1E1B4B</color>
+    <color name="cardAccentBlue">#172554</color>
+    <color name="cardAccentGreen">#052E16</color>
+    <color name="cardAccentOrange">#431407</color>
+
+    <!-- Bottom Nav -->
+    <color name="bottomNavBg">#1A1A2E</color>
+    <color name="bottomNavInactive">#6B7280</color>
+    <color name="bottomNavActive">#A29BFE</color>
+
+    <!-- Input fields -->
+    <color name="inputBorder">#374151</color>
+    <color name="inputBorderFocused">#A29BFE</color>
+    <color name="inputBg">#252542</color>
 </resources>

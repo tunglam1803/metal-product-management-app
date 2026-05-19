@@ -4,10 +4,10 @@
         <item name="colorOnPrimary">@color/colorOnPrimary</item>
         <item name="colorPrimaryContainer">@color/colorPrimaryContainer</item>
         <item name="colorOnPrimaryContainer">@color/colorOnPrimaryContainer</item>
-        
+
         <item name="colorSecondary">@color/colorSecondary</item>
         <item name="colorOnSecondary">@color/colorOnSecondary</item>
-        
+
         <item name="android:windowBackground">@color/colorBackground</item>
         <item name="colorBackground">@color/colorBackground</item>
         <item name="colorOnBackground">@color/colorOnBackground</item>
@@ -15,7 +15,15 @@
         <item name="colorOnSurface">@color/colorOnSurface</item>
 
         <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="android:navigationBarColor">@color/bottomNavBg</item>
+
+        <!-- Default font family for premium feel -->
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <style name="Theme.MyApplication" parent="Base.Theme.MyApplication" />
+
+    <style name="ShapeAppearanceOverlay.FAB" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

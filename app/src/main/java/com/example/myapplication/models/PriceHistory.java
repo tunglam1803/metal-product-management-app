@@ -9,9 +9,11 @@ public class PriceHistory {
     private Long changed_at;
     private String note;
 
-    public PriceHistory() {}
+    public PriceHistory() {
+    }
 
-    public PriceHistory(Double old_import_price, Double new_import_price, Double old_sell_price, Double new_sell_price, Long changed_at, String note) {
+    public PriceHistory(Double old_import_price, Double new_import_price, Double old_sell_price, Double new_sell_price,
+            Long changed_at, String note) {
         this.old_import_price = old_import_price;
         this.new_import_price = new_import_price;
         this.old_sell_price = old_sell_price;

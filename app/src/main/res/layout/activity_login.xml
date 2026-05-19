@@ -3,19 +3,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
     android:gravity="center"
-    android:background="?attr/colorSurface">
+    android:background="@color/colorBackground"
+    android:padding="28dp">
+
+    <!-- App Logo/Icon Area -->
+    <FrameLayout
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@drawable/bg_icon_circle_purple"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_menu_agenda"
+            app:tint="@color/colorPrimary"
+            android:layout_gravity="center"
+            xmlns:app="http://schemas.android.com/apk/res-auto" />
+    </FrameLayout>
 
     <!-- Logo / Title -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="QUẢN LÝ HÀNG HÓA"
-        android:textColor="@color/teal_700"
-        android:textSize="28sp"
+        android:textColor="@color/colorPrimary"
+        android:textSize="26sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp" />
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đăng nhập để tiếp tục"
+        android:textColor="@color/colorTextGrey"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif"
+        android:layout_marginBottom="36dp" />
 
     <!-- Email -->
     <LinearLayout
@@ -28,22 +54,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Email"
-            android:textColor="@color/teal_700"
-            android:textSize="12sp"
+            android:textColor="@color/colorTextDark"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="6dp"
+            android:fontFamily="sans-serif-medium" />
 
         <EditText
             android:id="@+id/etEmail"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="52dp"
             android:hint="Nhập email của bạn"
             android:inputType="textEmailAddress"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:background="@drawable/edit_text_background"
-            android:textColor="?attr/colorOnSurface"
-            android:textColorHint="@color/teal_200" />
+            android:textColor="@color/colorTextDark"
+            android:textColorHint="@color/text_hint"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif" />
     </LinearLayout>
 
     <!-- Password -->
@@ -51,39 +80,44 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginBottom="24dp">
+        android:layout_marginBottom="28dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Mật khẩu"
-            android:textColor="@color/teal_700"
-            android:textSize="12sp"
+            android:textColor="@color/colorTextDark"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="6dp"
+            android:fontFamily="sans-serif-medium" />
 
         <EditText
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="52dp"
             android:hint="Nhập mật khẩu"
             android:inputType="textPassword"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:background="@drawable/edit_text_background"
-            android:textColor="?attr/colorOnSurface"
-            android:textColorHint="@color/teal_200" />
+            android:textColor="@color/colorTextDark"
+            android:textColorHint="@color/text_hint"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif" />
     </LinearLayout>
 
     <!-- Login Button -->
     <android.widget.Button
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="52dp"
         android:text="Đăng Nhập"
         android:textColor="@android:color/white"
         android:background="@drawable/btn_primary"
         android:textStyle="bold"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-medium"
         android:layout_marginBottom="12dp" />
 
 </LinearLayout>

@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.MotionEvent;
@@ -35,6 +36,9 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import android.app.Activity;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import com.example.myapplication.ProductDetailActivity;
 import com.example.myapplication.MainActivity;
@@ -66,6 +70,14 @@ public class HomeFragment extends Fragment {
     private int swipedPosition = -1;
     private RecyclerView rvProducts;
     private ActivityResultLauncher<Intent> barcodeScannerLauncher;
+    private int currentSortMode = 0; // 0=Mới nhất, 1=Cũ nhất, 2=Giá tăng, 3=Giá giảm, 4=Tên A-Z, 5=Tên Z-A
+    private boolean isGridView = false;
+    private int currentTab = 0; // 0=Sản phẩm, 1=Tồn kho, 2=Bán kèm
+    private ImageButton btnGridToggle;
+    private ImageButton btnSort;
+
+    // Tab Views
+    private View tabProducts, tabInventory, tabBundle;
 
     @Nullable
     @Override
@@ -82,8 +94,8 @@ public class HomeFragment extends Fragment {
 
         ImageButton btnBack = view.findViewById(R.id.btnBack);
         ImageButton btnScan = view.findViewById(R.id.btnScan);
-        ImageButton btnSort = view.findViewById(R.id.btnSort);
-        ImageButton btnGridToggle = view.findViewById(R.id.btnGridToggle);
+        btnSort = view.findViewById(R.id.btnSort);
+        btnGridToggle = view.findViewById(R.id.btnGridToggle);
 
         // Register Barcode Scanner Launcher
         barcodeScannerLauncher = registerForActivityResult(
@@ -96,13 +108,12 @@ public class HomeFragment extends Fragment {
                             Toast.makeText(getContext(), "Đã quét: " + barcode, Toast.LENGTH_SHORT).show();
                         }
                     }
-                }
-        );
+                });
 
         // 2. Ánh xạ các View phụ (Tabs & Pills)
-        View tabProducts = view.findViewById(R.id.tabProducts);
-        View tabInventory = view.findViewById(R.id.tabInventory);
-        View tabBundle = view.findViewById(R.id.tabBundle);
+        tabProducts = view.findViewById(R.id.tabProducts);
+        tabInventory = view.findViewById(R.id.tabInventory);
+        tabBundle = view.findViewById(R.id.tabBundle);
         View tabCategory = view.findViewById(R.id.tabCategory);
 
         llPillsContainer = view.findViewById(R.id.llPillsContainer);
@@ -184,7 +195,7 @@ public class HomeFragment extends Fragment {
                 Paint paint = new Paint();
 
                 // 1. Vẽ nút "SỬA" màu Xanh Lam (Bên trái)
-                paint.setColor(Color.parseColor("#1A73E8"));
+                paint.setColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary));
                 c.drawRoundRect(
                         (float) itemView.getRight() - swipeLimit, (float) itemView.getTop() + 10,
                         (float) itemView.getRight() - halfLimit, (float) itemView.getBottom() - 10,
@@ -213,7 +224,7 @@ public class HomeFragment extends Fragment {
                         (float) itemView.getBottom() - 24, paint);
 
                 // 2. Vẽ nút "XÓA" màu Đỏ Rực (Bên phải)
-                paint.setColor(Color.parseColor("#E53935"));
+                paint.setColor(ContextCompat.getColor(requireContext(), R.color.colorDanger));
                 c.drawRoundRect(
                         (float) itemView.getRight() - halfLimit, (float) itemView.getTop() + 10,
                         (float) itemView.getRight(), (float) itemView.getBottom() - 10,
@@ -345,19 +356,30 @@ public class HomeFragment extends Fragment {
             Intent intent = new Intent(getContext(), ScannerActivity.class);
             barcodeScannerLauncher.launch(intent);
         });
-        btnSort.setOnClickListener(staticFeatureListener);
-        btnGridToggle.setOnClickListener(staticFeatureListener);
+
+        btnSort.setOnClickListener(v -> showSortDialog());
+        btnGridToggle.setOnClickListener(v -> toggleGridView());
 
         // 5. Thiết lập sự kiện cho các Tab ngang
         tabProducts.setOnClickListener(v -> {
-            // Tab hiện tại đang chọn
+            currentTab = 0;
+            updateTabStyles();
+            filterProducts(etSearch.getText().toString());
         });
-        tabInventory.setOnClickListener(staticFeatureListener);
-        tabBundle.setOnClickListener(staticFeatureListener);
+        tabInventory.setOnClickListener(v -> {
+            currentTab = 1;
+            updateTabStyles();
+            filterProducts(etSearch.getText().toString());
+        });
+        tabBundle.setOnClickListener(v -> {
+            currentTab = 2;
+            updateTabStyles();
+            filterProducts(etSearch.getText().toString());
+        });
         tabCategory.setOnClickListener(v -> showCategoryManagerDialog());
 
         // 6. Thiết lập sự kiện cho các Pills nhãn lọc
-        btnPillsGrid.setOnClickListener(staticFeatureListener);
+        btnPillsGrid.setOnClickListener(v -> showCategoriesBottomSheet());
 
         // 7. Thiết lập sự kiện nút FAB
         fabAdd.setOnClickListener(v -> {
@@ -422,7 +444,8 @@ public class HomeFragment extends Fragment {
     }
 
     private String removeAccents(String src) {
-        if (src == null) return "";
+        if (src == null)
+            return "";
         String normalized = java.text.Normalizer.normalize(src, java.text.Normalizer.Form.NFD);
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         String out = pattern.matcher(normalized).replaceAll("");
@@ -438,6 +461,14 @@ public class HomeFragment extends Fragment {
                 continue;
             }
 
+            // Tab Filtering
+            if (currentTab == 1 && (p.getStock_quantity() == null || p.getStock_quantity() <= 0)) {
+                continue; // Tồn kho tab: only show items with stock > 0
+            }
+            if (currentTab == 2 && (p.getIs_bundle() == null || !p.getIs_bundle())) {
+                continue; // Bán kèm tab: only show items that are bundles
+            }
+
             String name = p.getProduct_name() != null ? removeAccents(p.getProduct_name().toLowerCase()) : "";
             String code = p.getProduct_code() != null ? removeAccents(p.getProduct_code().toLowerCase()) : "";
 
@@ -445,7 +476,89 @@ public class HomeFragment extends Fragment {
                 filtered.add(p);
             }
         }
+
+        // Apply Sorting
+        Collections.sort(filtered, (p1, p2) -> {
+            switch (currentSortMode) {
+                case 1: // Cũ nhất
+                    Long t1 = p1.getUpdated_at() != null ? p1.getUpdated_at() : 0L;
+                    Long t2 = p2.getUpdated_at() != null ? p2.getUpdated_at() : 0L;
+                    return t1.compareTo(t2);
+                case 2: // Giá tăng dần
+                    return Double.compare(p1.getSell_price(), p2.getSell_price());
+                case 3: // Giá giảm dần
+                    return Double.compare(p2.getSell_price(), p1.getSell_price());
+                case 4: // Tên A-Z
+                    String n1 = p1.getProduct_name() != null ? p1.getProduct_name().toLowerCase() : "";
+                    String n2 = p2.getProduct_name() != null ? p2.getProduct_name().toLowerCase() : "";
+                    return n1.compareTo(n2);
+                case 5: // Tên Z-A
+                    String n3 = p1.getProduct_name() != null ? p1.getProduct_name().toLowerCase() : "";
+                    String n4 = p2.getProduct_name() != null ? p2.getProduct_name().toLowerCase() : "";
+                    return n4.compareTo(n3);
+                case 0: // Mới nhất (default)
+                default:
+                    Long t3 = p1.getUpdated_at() != null ? p1.getUpdated_at() : 0L;
+                    Long t4 = p2.getUpdated_at() != null ? p2.getUpdated_at() : 0L;
+                    return t4.compareTo(t3);
+            }
+        });
+
         adapter.setProducts(filtered);
+    }
+
+    private void showSortDialog() {
+        String[] sortOptions = { "Mới cập nhật", "Cũ nhất", "Giá: Thấp đến Cao", "Giá: Cao đến Thấp", "Tên: A-Z",
+                "Tên: Z-A" };
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Sắp xếp sản phẩm")
+                .setSingleChoiceItems(sortOptions, currentSortMode, (dialog, which) -> {
+                    currentSortMode = which;
+                    filterProducts(etSearch.getText().toString());
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    private void toggleGridView() {
+        isGridView = !isGridView;
+        if (isGridView) {
+            btnGridToggle.setImageResource(android.R.drawable.ic_menu_sort_by_size); // Set list icon to switch back
+            rvProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        } else {
+            btnGridToggle.setImageResource(android.R.drawable.ic_dialog_dialer); // Set grid icon to switch to grid
+            rvProducts.setLayoutManager(new LinearLayoutManager(getContext()));
+        }
+        adapter.setGridView(isGridView);
+    }
+
+    private void updateTabStyles() {
+        if (getContext() == null)
+            return;
+
+        int activeColor = ContextCompat.getColor(getContext(), R.color.colorTabActive);
+        int inactiveColor = ContextCompat.getColor(getContext(), R.color.colorTextGrey);
+        int transparent = Color.TRANSPARENT;
+
+        // Sản phẩm
+        ((TextView) ((ViewGroup) tabProducts).getChildAt(0))
+                .setTextColor(currentTab == 0 ? activeColor : inactiveColor);
+        ((TextView) ((ViewGroup) tabProducts).getChildAt(0)).setTypeface(null,
+                currentTab == 0 ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        ((ViewGroup) tabProducts).getChildAt(1).setBackgroundColor(currentTab == 0 ? activeColor : transparent);
+
+        // Tồn kho
+        ((TextView) ((ViewGroup) tabInventory).getChildAt(0))
+                .setTextColor(currentTab == 1 ? activeColor : inactiveColor);
+        ((TextView) ((ViewGroup) tabInventory).getChildAt(0)).setTypeface(null,
+                currentTab == 1 ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        ((ViewGroup) tabInventory).getChildAt(1).setBackgroundColor(currentTab == 1 ? activeColor : transparent);
+
+        // Bán kèm
+        ((TextView) ((ViewGroup) tabBundle).getChildAt(0)).setTextColor(currentTab == 2 ? activeColor : inactiveColor);
+        ((TextView) ((ViewGroup) tabBundle).getChildAt(0)).setTypeface(null,
+                currentTab == 2 ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        ((ViewGroup) tabBundle).getChildAt(1).setBackgroundColor(currentTab == 2 ? activeColor : transparent);
     }
 
     private void hideKeyboard() {
@@ -490,7 +603,7 @@ public class HomeFragment extends Fragment {
             tvAll.setTextColor(ContextCompat.getColor(getContext(), R.color.colorPillActiveBorder));
             tvAll.setBackgroundResource(R.drawable.bg_pill_active);
         } else {
-            tvAll.setTextColor(Color.parseColor("#5F6368"));
+            tvAll.setTextColor(ContextCompat.getColor(getContext(), R.color.colorTextGrey));
             tvAll.setBackgroundResource(R.drawable.bg_pill_inactive);
         }
         tvAll.setOnClickListener(v -> {
@@ -511,7 +624,7 @@ public class HomeFragment extends Fragment {
                 tvPill.setTextColor(ContextCompat.getColor(getContext(), R.color.colorPillActiveBorder));
                 tvPill.setBackgroundResource(R.drawable.bg_pill_active);
             } else {
-                tvPill.setTextColor(Color.parseColor("#5F6368"));
+                tvPill.setTextColor(ContextCompat.getColor(getContext(), R.color.colorTextGrey));
                 tvPill.setBackgroundResource(R.drawable.bg_pill_inactive);
             }
 
@@ -524,9 +637,65 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    private void showCategoriesBottomSheet() {
+        if (getContext() == null)
+            return;
+
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getContext());
+        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_categories, null);
+        bottomSheetDialog.setContentView(sheetView);
+
+        ChipGroup chipGroup = sheetView.findViewById(R.id.chipGroupCategories);
+        android.widget.Button btnApply = sheetView.findViewById(R.id.btnApplyCategoryFilter);
+
+        // Define a temporary selected ID
+        final String[] tempSelectedId = { selectedCategoryId };
+
+        // Add "Tất cả" chip
+        Chip chipAll = new Chip(getContext());
+        chipAll.setText("Tất cả");
+        chipAll.setCheckable(true);
+        chipAll.setChecked(tempSelectedId[0] == null);
+        chipAll.setOnClickListener(v -> {
+            tempSelectedId[0] = null;
+            chipGroup.clearCheck();
+            chipAll.setChecked(true);
+        });
+        chipGroup.addView(chipAll);
+
+        // Add category chips
+        for (Category cat : categoriesList) {
+            Chip chip = new Chip(getContext());
+            chip.setText(cat.getCategory_name());
+            chip.setCheckable(true);
+            boolean isChecked = cat.getId().equals(tempSelectedId[0]);
+            chip.setChecked(isChecked);
+            if (isChecked) {
+                chipAll.setChecked(false);
+            }
+
+            chip.setOnClickListener(v -> {
+                tempSelectedId[0] = cat.getId();
+                chipGroup.clearCheck();
+                chip.setChecked(true);
+            });
+            chipGroup.addView(chip);
+        }
+
+        btnApply.setOnClickListener(v -> {
+            selectedCategoryId = tempSelectedId[0];
+            populatePills();
+            filterProducts(etSearch.getText().toString());
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetDialog.show();
+    }
+
     private void showCategoryManagerDialog() {
         Context context = getContext();
-        if (context == null) return;
+        if (context == null)
+            return;
 
         // Inflate the main dialog layout
         android.view.View dialogView = android.view.LayoutInflater.from(context)
@@ -541,7 +710,7 @@ public class HomeFragment extends Fragment {
         context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         int textColorPrimary = typedValue.data;
         boolean isDarkMode = (textColorPrimary == Color.WHITE || (textColorPrimary & 0xFFFFFF) == 0xFFFFFF);
-        int dividerColor = isDarkMode ? Color.parseColor("#2D3033") : Color.parseColor("#E8EAED");
+        int dividerColor = ContextCompat.getColor(context, R.color.divider);
 
         // Tạo dialog
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(context)
@@ -567,10 +736,11 @@ public class HomeFragment extends Fragment {
 
         // Thiết lập bộ lắng nghe cập nhật danh sách Real-time
         firebaseHelper.listenForCategories((value, error) -> {
-            if (error != null || value == null || !dialog.isShowing()) return;
+            if (error != null || value == null || !dialog.isShowing())
+                return;
 
             listLayout.removeAllViews();
-            
+
             List<Category> list = new ArrayList<>();
             for (QueryDocumentSnapshot doc : value) {
                 Category cat = doc.toObject(Category.class);
@@ -583,7 +753,7 @@ public class HomeFragment extends Fragment {
                 tvEmpty.setText("Chưa có danh mục nào.");
                 tvEmpty.setGravity(android.view.Gravity.CENTER);
                 tvEmpty.setPadding(0, dpToPx(40), 0, dpToPx(40));
-                
+
                 context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
                 tvEmpty.setTextColor(typedValue.data);
                 listLayout.addView(tvEmpty);
@@ -608,7 +778,7 @@ public class HomeFragment extends Fragment {
                     EditText etEdit = new EditText(context);
                     etEdit.setText(cat.getCategory_name());
                     etEdit.setTextColor(textColorPrimary);
-                    etEdit.setHintTextColor(Color.parseColor("#809AA0A6"));
+                    etEdit.setHintTextColor(ContextCompat.getColor(context, R.color.text_hint));
                     etEdit.setSelection(etEdit.getText().length());
                     etEdit.setBackgroundResource(R.drawable.edit_text_background);
                     etEdit.setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12));
@@ -630,7 +800,8 @@ public class HomeFragment extends Fragment {
                                 String newName = etEdit.getText().toString().trim();
                                 if (!newName.isEmpty()) {
                                     firebaseHelper.updateCategory(cat.getId(), newName, () -> {
-                                        Toast.makeText(context, "Cập nhật danh mục thành công!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Cập nhật danh mục thành công!", Toast.LENGTH_SHORT)
+                                                .show();
                                     }, err -> {
                                         Toast.makeText(context, "Lỗi: " + err, Toast.LENGTH_SHORT).show();
                                     });
@@ -644,7 +815,8 @@ public class HomeFragment extends Fragment {
                 btnDelete.setOnClickListener(v2 -> {
                     new MaterialAlertDialogBuilder(context)
                             .setTitle("Xóa Danh Mục")
-                            .setMessage("Bạn có chắc chắn muốn xóa danh mục '" + cat.getCategory_name() + "'?\n\nTất cả sản phẩm thuộc danh mục này sẽ tự động chuyển sang nhóm 'Không xác định' (null).")
+                            .setMessage("Bạn có chắc chắn muốn xóa danh mục '" + cat.getCategory_name()
+                                    + "'?\n\nTất cả sản phẩm thuộc danh mục này sẽ tự động chuyển sang nhóm 'Không xác định' (null).")
                             .setPositiveButton("Xóa", (d, w) -> {
                                 firebaseHelper.deleteCategory(cat.getId(), () -> {
                                     Toast.makeText(context, "Đã xóa danh mục thành công!", Toast.LENGTH_SHORT).show();

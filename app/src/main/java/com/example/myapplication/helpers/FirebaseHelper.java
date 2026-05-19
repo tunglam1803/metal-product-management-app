@@ -186,10 +186,12 @@ public class FirebaseHelper {
                 });
     }
 
-    public void deleteCategory(String categoryId, OnSuccessListener successListener, OnFailureListener failureListener) {
+    public void deleteCategory(String categoryId, OnSuccessListener successListener,
+            OnFailureListener failureListener) {
         db.collection("categories").document(categoryId).delete()
                 .addOnSuccessListener(aVoid -> {
-                    // Tìm tất cả sản phẩm thuộc danh mục bị xóa và cập nhật danh mục của chúng về null
+                    // Tìm tất cả sản phẩm thuộc danh mục bị xóa và cập nhật danh mục của chúng về
+                    // null
                     db.collection("products")
                             .whereEqualTo("category_id", categoryId)
                             .get()
@@ -207,7 +209,8 @@ public class FirebaseHelper {
                 });
     }
 
-    public void updateCategory(String categoryId, String newName, OnSuccessListener successListener, OnFailureListener failureListener) {
+    public void updateCategory(String categoryId, String newName, OnSuccessListener successListener,
+            OnFailureListener failureListener) {
         db.collection("categories").document(categoryId).update("category_name", newName)
                 .addOnSuccessListener(aVoid -> {
                     if (successListener != null)
