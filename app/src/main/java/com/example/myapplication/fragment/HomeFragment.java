@@ -57,9 +57,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class HomeFragment extends Fragment {
 
@@ -79,8 +81,6 @@ public class HomeFragment extends Fragment {
     private boolean isGridView = false;
     private int currentTab = 0; // 0=Sản phẩm, 1=Tồn kho, 2=Bán kèm
     private ImageButton btnGridToggle;
-
-    // Tab Views
     private View tabProducts, tabInventory, tabBundle;
 
     @Nullable
@@ -447,8 +447,8 @@ public class HomeFragment extends Fragment {
     private String removeAccents(String src) {
         if (src == null)
             return "";
-        String normalized = java.text.Normalizer.normalize(src, java.text.Normalizer.Form.NFD);
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        String normalized = Normalizer.normalize(src, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         String out = pattern.matcher(normalized).replaceAll("");
         return out.replaceAll("đ", "d").replaceAll("Đ", "d");
     }
@@ -462,12 +462,11 @@ public class HomeFragment extends Fragment {
                 continue;
             }
 
-            // Tab Filtering
             if (currentTab == 1 && p.getStock_quantity() <= 0) {
-                continue; // Tồn kho tab: only show items with stock > 0
+                continue;
             }
             if (currentTab == 2 && !p.getIs_bundle()) {
-                continue; // Bán kèm tab: only show items that are bundles
+                continue;
             }
 
             String name = p.getProduct_name() != null ? removeAccents(p.getProduct_name().toLowerCase()) : "";
@@ -478,7 +477,6 @@ public class HomeFragment extends Fragment {
             }
         }
 
-        // Apply Sorting
         filtered.sort((p1, p2) -> {
             switch (currentSortMode) {
                 case 1: // Cũ nhất
@@ -545,14 +543,14 @@ public class HomeFragment extends Fragment {
         ((TextView) ((ViewGroup) tabProducts).getChildAt(0))
                 .setTextColor(currentTab == 0 ? activeColor : inactiveColor);
         ((TextView) ((ViewGroup) tabProducts).getChildAt(0)).setTypeface(null,
-                currentTab == 0 ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+                currentTab == 0 ? Typeface.BOLD : Typeface.NORMAL);
         ((ViewGroup) tabProducts).getChildAt(1).setBackgroundColor(currentTab == 0 ? activeColor : transparent);
 
         // Tồn kho
         ((TextView) ((ViewGroup) tabInventory).getChildAt(0))
                 .setTextColor(currentTab == 1 ? activeColor : inactiveColor);
         ((TextView) ((ViewGroup) tabInventory).getChildAt(0)).setTypeface(null,
-                currentTab == 1 ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+                currentTab == 1 ? Typeface.BOLD : Typeface.NORMAL);
         ((ViewGroup) tabInventory).getChildAt(1).setBackgroundColor(currentTab == 1 ? activeColor : transparent);
 
         // Bán kèm
@@ -649,10 +647,8 @@ public class HomeFragment extends Fragment {
         ChipGroup chipGroup = sheetView.findViewById(R.id.chipGroupCategories);
         android.widget.Button btnApply = sheetView.findViewById(R.id.btnApplyCategoryFilter);
 
-        // Define a temporary selected ID
         final String[] tempSelectedId = { selectedCategoryId };
 
-        // Add "Tất cả" chip
         Chip chipAll = new Chip(getContext());
         chipAll.setText("Tất cả");
         chipAll.setCheckable(true);
@@ -664,7 +660,6 @@ public class HomeFragment extends Fragment {
         });
         chipGroup.addView(chipAll);
 
-        // Add category chips
         for (Category cat : categoriesList) {
             Chip chip = new Chip(getContext());
             chip.setText(cat.getCategory_name());
@@ -698,7 +693,6 @@ public class HomeFragment extends Fragment {
         if (context == null)
             return;
 
-        // Inflate the main dialog layout
         View dialogView = LayoutInflater.from(context)
                 .inflate(R.layout.dialog_category_manager, null);
 
@@ -706,20 +700,17 @@ public class HomeFragment extends Fragment {
         Button btnAdd = dialogView.findViewById(R.id.btn_add_category);
         LinearLayout listLayout = dialogView.findViewById(R.id.ll_categories_list);
 
-        // Resolve primary text color for theme-aware dialogs
         TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         int textColorPrimary = typedValue.data;
         int dividerColor = ContextCompat.getColor(context, R.color.divider);
 
-        // Tạo dialog
         AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle("Quản Lý Danh Mục")
                 .setView(dialogView)
                 .setNegativeButton("Đóng", null)
                 .create();
 
-        // Lắng nghe sự kiện click Thêm danh mục
         btnAdd.setOnClickListener(v -> {
             String catName = etNewCat.getText().toString().trim();
             if (catName.isEmpty()) {
@@ -734,7 +725,6 @@ public class HomeFragment extends Fragment {
             });
         });
 
-        // Thiết lập bộ lắng nghe cập nhật danh sách Real-time
         firebaseHelper.listenForCategories((value, error) -> {
             if (error != null || value == null || !dialog.isShowing())
                 return;
@@ -761,7 +751,6 @@ public class HomeFragment extends Fragment {
             }
 
             for (Category cat : list) {
-                // Inflate item layout
                 View rowView = LayoutInflater.from(context)
                         .inflate(R.layout.item_category_manage, listLayout, false);
 
@@ -773,7 +762,6 @@ public class HomeFragment extends Fragment {
                 tvName.setText(cat.getCategory_name());
                 divider.setBackgroundColor(dividerColor);
 
-                // Sự kiện click nút Sửa
                 btnEdit.setOnClickListener(v2 -> {
                     EditText etEdit = new EditText(context);
                     etEdit.setText(cat.getCategory_name());
@@ -811,7 +799,6 @@ public class HomeFragment extends Fragment {
                             .show();
                 });
 
-                // Sự kiện click nút Xóa
                 btnDelete.setOnClickListener(v2 -> {
                     new MaterialAlertDialogBuilder(context)
                             .setTitle("Xóa Danh Mục")
