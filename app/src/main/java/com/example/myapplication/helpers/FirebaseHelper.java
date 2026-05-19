@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
@@ -196,7 +197,7 @@ public class FirebaseHelper {
                             .whereEqualTo("category_id", categoryId)
                             .get()
                             .addOnSuccessListener(queryDocumentSnapshots -> {
-                                for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                                     db.collection("products").document(doc.getId()).update("category_id", null);
                                 }
                                 if (successListener != null)

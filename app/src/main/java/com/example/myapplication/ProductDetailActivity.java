@@ -378,7 +378,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 }
             }
 
-            Collections.sort(histories, (h1, h2) -> {
+            histories.sort((h1, h2) -> {
                 Long t1 = h1.getChanged_at() != null ? h1.getChanged_at() : 0L;
                 Long t2 = h2.getChanged_at() != null ? h2.getChanged_at() : 0L;
                 return t2.compareTo(t1);

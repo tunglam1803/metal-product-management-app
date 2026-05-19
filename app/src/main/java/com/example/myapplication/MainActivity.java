@@ -25,8 +25,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> barcodeScannerLauncher;
-
-    // View declarations for custom tabs
     private View tabDashboard, tabHome, tabReports, tabMore;
     private ImageView ivTabDashboard, ivTabHome, ivTabReports, ivTabMore;
     private TextView tvTabDashboard, tvTabHome, tvTabReports, tvTabMore;
@@ -43,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Initialize Views
         initCustomTabs();
 
         barcodeScannerLauncher = registerForActivityResult(
@@ -116,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateTabStyles(int activeTabId) {
-        // Reset all to inactive state
         int inactiveColor = ContextCompat.getColor(this, R.color.bottomNavInactive);
         int activeColor = ContextCompat.getColor(this, R.color.bottomNavActive);
 
@@ -135,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
         tvTabReports.setTypeface(null, Typeface.NORMAL);
         tvTabMore.setTypeface(null, Typeface.NORMAL);
 
-        // Apply active state
         if (activeTabId == R.id.tab_dashboard) {
             ivTabDashboard.setColorFilter(activeColor);
             tvTabDashboard.setTextColor(activeColor);
@@ -163,13 +158,11 @@ public class MainActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
-                        // Product found! Navigate to edit screen.
                         String productId = queryDocumentSnapshots.getDocuments().get(0).getId();
                         Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
                         intent.putExtra("PRODUCT_ID", productId);
                         startActivity(intent);
                     } else {
-                        // Product not found! Navigate to create new product with pre-filled code.
                         Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
                         intent.putExtra("PRODUCT_CODE", scannedCode);
                         startActivity(intent);
