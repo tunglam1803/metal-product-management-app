@@ -645,7 +645,7 @@ public class HomeFragment extends Fragment {
         bottomSheetDialog.setContentView(sheetView);
 
         ChipGroup chipGroup = sheetView.findViewById(R.id.chipGroupCategories);
-        android.widget.Button btnApply = sheetView.findViewById(R.id.btnApplyCategoryFilter);
+        Button btnApply = sheetView.findViewById(R.id.btnApplyCategoryFilter);
 
         final String[] tempSelectedId = { selectedCategoryId };
 
