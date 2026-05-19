@@ -3,9 +3,12 @@ package com.example.myapplication.fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -16,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -103,7 +107,6 @@ public class DashboardFragment extends Fragment {
     }
 
     private void loadDashboardData() {
-        // Load recent products
         firebaseHelper.listenForProducts((value, error) -> {
             if (error != null || value == null)
                 return;
@@ -115,17 +118,14 @@ public class DashboardFragment extends Fragment {
                 allProducts.add(p);
             }
 
-            // Set dynamic count
             tvStatsProductsCount.setText(String.valueOf(allProducts.size()));
 
-            // Sort by updated_at desc
-            Collections.sort(allProducts, (p1, p2) -> {
+            allProducts.sort((p1, p2) -> {
                 Long t1 = p1.getUpdated_at() != null ? p1.getUpdated_at() : 0L;
                 Long t2 = p2.getUpdated_at() != null ? p2.getUpdated_at() : 0L;
                 return t2.compareTo(t1);
             });
 
-            // Show top 3 recent products
             List<Product> recent = new ArrayList<>();
             for (int i = 0; i < Math.min(3, allProducts.size()); i++) {
                 recent.add(allProducts.get(i));
@@ -133,7 +133,6 @@ public class DashboardFragment extends Fragment {
             adapter.setProducts(recent);
         });
 
-        // Load categories stats
         firebaseHelper.listenForCategories((value, error) -> {
             if (error != null || value == null)
                 return;
@@ -163,22 +162,20 @@ public class DashboardFragment extends Fragment {
             return;
 
         // Inflate the main dialog layout
-        android.view.View dialogView = android.view.LayoutInflater.from(context)
+        View dialogView = LayoutInflater.from(context)
                 .inflate(R.layout.dialog_category_manager, null);
 
         EditText etNewCat = dialogView.findViewById(R.id.et_new_category);
-        android.widget.Button btnAdd = dialogView.findViewById(R.id.btn_add_category);
+        Button btnAdd = dialogView.findViewById(R.id.btn_add_category);
         LinearLayout listLayout = dialogView.findViewById(R.id.ll_categories_list);
 
-        // Resolve primary text color lightness for theme-based divider color
-        android.util.TypedValue typedValue = new android.util.TypedValue();
+        TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         int textColorPrimary = typedValue.data;
         boolean isDarkMode = (textColorPrimary == Color.WHITE || (textColorPrimary & 0xFFFFFF) == 0xFFFFFF);
         int dividerColor = ContextCompat.getColor(context, R.color.divider);
 
-        // Tạo dialog
-        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(context)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle("Quản Lý Danh Mục")
                 .setView(dialogView)
                 .setNegativeButton("Đóng", null)
@@ -216,7 +213,7 @@ public class DashboardFragment extends Fragment {
             if (list.isEmpty()) {
                 TextView tvEmpty = new TextView(context);
                 tvEmpty.setText("Chưa có danh mục nào.");
-                tvEmpty.setGravity(android.view.Gravity.CENTER);
+                tvEmpty.setGravity(Gravity.CENTER);
                 tvEmpty.setPadding(0, dpToPx(40), 0, dpToPx(40));
 
                 context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
@@ -227,7 +224,7 @@ public class DashboardFragment extends Fragment {
 
             for (Category cat : list) {
                 // Inflate item layout
-                android.view.View rowView = android.view.LayoutInflater.from(context)
+                View rowView = LayoutInflater.from(context)
                         .inflate(R.layout.item_category_manage, listLayout, false);
 
                 TextView tvName = rowView.findViewById(R.id.tv_category_name);

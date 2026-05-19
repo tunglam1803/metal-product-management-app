@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,11 +13,14 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -26,6 +30,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -74,7 +79,6 @@ public class HomeFragment extends Fragment {
     private boolean isGridView = false;
     private int currentTab = 0; // 0=Sản phẩm, 1=Tồn kho, 2=Bán kèm
     private ImageButton btnGridToggle;
-    private ImageButton btnSort;
 
     // Tab Views
     private View tabProducts, tabInventory, tabBundle;
@@ -94,7 +98,7 @@ public class HomeFragment extends Fragment {
 
         ImageButton btnBack = view.findViewById(R.id.btnBack);
         ImageButton btnScan = view.findViewById(R.id.btnScan);
-        btnSort = view.findViewById(R.id.btnSort);
+        ImageButton btnSort = view.findViewById(R.id.btnSort);
         btnGridToggle = view.findViewById(R.id.btnGridToggle);
 
         // Register Barcode Scanner Launcher
@@ -349,9 +353,6 @@ public class HomeFragment extends Fragment {
             hideKeyboard();
         });
 
-        View.OnClickListener staticFeatureListener = v -> Toast
-                .makeText(getContext(), "Tính năng đang được phát triển!", Toast.LENGTH_SHORT).show();
-
         btnScan.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), ScannerActivity.class);
             barcodeScannerLauncher.launch(intent);
@@ -478,7 +479,7 @@ public class HomeFragment extends Fragment {
         }
 
         // Apply Sorting
-        Collections.sort(filtered, (p1, p2) -> {
+        filtered.sort((p1, p2) -> {
             switch (currentSortMode) {
                 case 1: // Cũ nhất
                     Long t1 = p1.getUpdated_at() != null ? p1.getUpdated_at() : 0L;
@@ -557,7 +558,7 @@ public class HomeFragment extends Fragment {
         // Bán kèm
         ((TextView) ((ViewGroup) tabBundle).getChildAt(0)).setTextColor(currentTab == 2 ? activeColor : inactiveColor);
         ((TextView) ((ViewGroup) tabBundle).getChildAt(0)).setTypeface(null,
-                currentTab == 2 ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+                currentTab == 2 ? Typeface.BOLD : Typeface.NORMAL);
         ((ViewGroup) tabBundle).getChildAt(1).setBackgroundColor(currentTab == 2 ? activeColor : transparent);
     }
 
@@ -698,22 +699,22 @@ public class HomeFragment extends Fragment {
             return;
 
         // Inflate the main dialog layout
-        android.view.View dialogView = android.view.LayoutInflater.from(context)
+        View dialogView = LayoutInflater.from(context)
                 .inflate(R.layout.dialog_category_manager, null);
 
         EditText etNewCat = dialogView.findViewById(R.id.et_new_category);
-        android.widget.Button btnAdd = dialogView.findViewById(R.id.btn_add_category);
+        Button btnAdd = dialogView.findViewById(R.id.btn_add_category);
         LinearLayout listLayout = dialogView.findViewById(R.id.ll_categories_list);
 
         // Resolve primary text color lightness for theme-based divider color
-        android.util.TypedValue typedValue = new android.util.TypedValue();
+        TypedValue typedValue = new TypedValue();
         context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         int textColorPrimary = typedValue.data;
         boolean isDarkMode = (textColorPrimary == Color.WHITE || (textColorPrimary & 0xFFFFFF) == 0xFFFFFF);
         int dividerColor = ContextCompat.getColor(context, R.color.divider);
 
         // Tạo dialog
-        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(context)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle("Quản Lý Danh Mục")
                 .setView(dialogView)
                 .setNegativeButton("Đóng", null)
@@ -751,7 +752,7 @@ public class HomeFragment extends Fragment {
             if (list.isEmpty()) {
                 TextView tvEmpty = new TextView(context);
                 tvEmpty.setText("Chưa có danh mục nào.");
-                tvEmpty.setGravity(android.view.Gravity.CENTER);
+                tvEmpty.setGravity(Gravity.CENTER);
                 tvEmpty.setPadding(0, dpToPx(40), 0, dpToPx(40));
 
                 context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
@@ -762,7 +763,7 @@ public class HomeFragment extends Fragment {
 
             for (Category cat : list) {
                 // Inflate item layout
-                android.view.View rowView = android.view.LayoutInflater.from(context)
+                View rowView = LayoutInflater.from(context)
                         .inflate(R.layout.item_category_manage, listLayout, false);
 
                 TextView tvName = rowView.findViewById(R.id.tv_category_name);
