@@ -112,8 +112,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                             Toast.makeText(this, "Đã quét và áp dụng: " + barcode, Toast.LENGTH_SHORT).show();
                         }
                     }
-                }
-        );
+                });
 
         btnScanCode.setOnClickListener(v -> {
             Intent intent = new Intent(this, ScannerActivity.class);

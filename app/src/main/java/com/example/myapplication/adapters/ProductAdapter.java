@@ -32,6 +32,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     private final Context context;
     private List<Product> productList = new ArrayList<>();
     private final OnProductClickListener listener;
+    private boolean isGridView = false;
+
     public interface OnProductClickListener {
         void onProductClick(Product product);
     }
@@ -43,6 +45,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
     public void setProducts(List<Product> products) {
         this.productList = products;
+        notifyDataSetChanged();
+    }
+
+    public void setGridView(boolean isGridView) {
+        this.isGridView = isGridView;
         notifyDataSetChanged();
     }
 
@@ -66,7 +73,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_product, parent, false);
+        int layoutId = isGridView ? R.layout.item_product_grid : R.layout.item_product;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layoutId, parent, false);
         return new ViewHolder(view);
     }
 

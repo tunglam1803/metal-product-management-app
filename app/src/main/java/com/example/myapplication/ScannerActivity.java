@@ -83,8 +83,7 @@ public class ScannerActivity extends AppCompatActivity {
                 Animation.RELATIVE_TO_PARENT, 0.0f,
                 Animation.RELATIVE_TO_PARENT, 0.0f,
                 Animation.RELATIVE_TO_PARENT, 0.0f,
-                Animation.RELATIVE_TO_PARENT, 0.95f
-        );
+                Animation.RELATIVE_TO_PARENT, 0.95f);
         animation.setDuration(2500);
         animation.setRepeatCount(Animation.INFINITE);
         animation.setRepeatMode(Animation.REVERSE);
@@ -96,11 +95,12 @@ public class ScannerActivity extends AppCompatActivity {
     }
 
     private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA }, CAMERA_PERMISSION_CODE);
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAMERA_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -169,7 +169,8 @@ public class ScannerActivity extends AppCompatActivity {
             try {
                 ToneGenerator toneGen = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
                 toneGen.startTone(ToneGenerator.TONE_PROP_BEEP, 150);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             runOnUiThread(() -> {
                 Intent resultIntent = new Intent();
@@ -184,7 +185,8 @@ public class ScannerActivity extends AppCompatActivity {
         if (camera != null && camera.getCameraInfo().hasFlashUnit()) {
             isFlashOn = !isFlashOn;
             camera.getCameraControl().enableTorch(isFlashOn);
-            btnFlash.setColorFilter(isFlashOn ? ContextCompat.getColor(this, android.R.color.holo_green_light) : ContextCompat.getColor(this, android.R.color.white));
+            btnFlash.setColorFilter(isFlashOn ? ContextCompat.getColor(this, android.R.color.holo_green_light)
+                    : ContextCompat.getColor(this, android.R.color.white));
         } else {
             Toast.makeText(this, "Thiết bị không hỗ trợ đèn Flash!", Toast.LENGTH_SHORT).show();
         }

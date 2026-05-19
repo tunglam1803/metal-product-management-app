@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -150,14 +151,16 @@ public class DashboardFragment extends Fragment {
     }
 
     private int dpToPx(int dp) {
-        if (getContext() == null) return dp;
+        if (getContext() == null)
+            return dp;
         float density = getContext().getResources().getDisplayMetrics().density;
         return Math.round(dp * density);
     }
 
     private void showCategoryManagerDialog() {
         Context context = getContext();
-        if (context == null) return;
+        if (context == null)
+            return;
 
         // Inflate the main dialog layout
         android.view.View dialogView = android.view.LayoutInflater.from(context)
@@ -172,7 +175,7 @@ public class DashboardFragment extends Fragment {
         context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         int textColorPrimary = typedValue.data;
         boolean isDarkMode = (textColorPrimary == Color.WHITE || (textColorPrimary & 0xFFFFFF) == 0xFFFFFF);
-        int dividerColor = isDarkMode ? Color.parseColor("#2D3033") : Color.parseColor("#E8EAED");
+        int dividerColor = ContextCompat.getColor(context, R.color.divider);
 
         // Tạo dialog
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(context)
@@ -198,10 +201,11 @@ public class DashboardFragment extends Fragment {
 
         // Thiết lập bộ lắng nghe cập nhật danh sách Real-time
         firebaseHelper.listenForCategories((value, error) -> {
-            if (error != null || value == null || !dialog.isShowing()) return;
+            if (error != null || value == null || !dialog.isShowing())
+                return;
 
             listLayout.removeAllViews();
-            
+
             List<Category> list = new ArrayList<>();
             for (QueryDocumentSnapshot doc : value) {
                 Category cat = doc.toObject(Category.class);
@@ -214,7 +218,7 @@ public class DashboardFragment extends Fragment {
                 tvEmpty.setText("Chưa có danh mục nào.");
                 tvEmpty.setGravity(android.view.Gravity.CENTER);
                 tvEmpty.setPadding(0, dpToPx(40), 0, dpToPx(40));
-                
+
                 context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, typedValue, true);
                 tvEmpty.setTextColor(typedValue.data);
                 listLayout.addView(tvEmpty);
@@ -239,7 +243,7 @@ public class DashboardFragment extends Fragment {
                     EditText etEdit = new EditText(context);
                     etEdit.setText(cat.getCategory_name());
                     etEdit.setTextColor(textColorPrimary);
-                    etEdit.setHintTextColor(Color.parseColor("#809AA0A6"));
+                    etEdit.setHintTextColor(ContextCompat.getColor(context, R.color.text_hint));
                     etEdit.setSelection(etEdit.getText().length());
                     etEdit.setBackgroundResource(R.drawable.edit_text_background);
                     etEdit.setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12));
@@ -261,7 +265,8 @@ public class DashboardFragment extends Fragment {
                                 String newName = etEdit.getText().toString().trim();
                                 if (!newName.isEmpty()) {
                                     firebaseHelper.updateCategory(cat.getId(), newName, () -> {
-                                        Toast.makeText(context, "Cập nhật danh mục thành công!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "Cập nhật danh mục thành công!", Toast.LENGTH_SHORT)
+                                                .show();
                                     }, err -> {
                                         Toast.makeText(context, "Lỗi: " + err, Toast.LENGTH_SHORT).show();
                                     });
@@ -275,7 +280,8 @@ public class DashboardFragment extends Fragment {
                 btnDelete.setOnClickListener(v2 -> {
                     new MaterialAlertDialogBuilder(context)
                             .setTitle("Xóa Danh Mục")
-                            .setMessage("Bạn có chắc chắn muốn xóa danh mục '" + cat.getCategory_name() + "'?\n\nTất cả sản phẩm thuộc danh mục này sẽ tự động chuyển sang nhóm 'Không xác định' (null).")
+                            .setMessage("Bạn có chắc chắn muốn xóa danh mục '" + cat.getCategory_name()
+                                    + "'?\n\nTất cả sản phẩm thuộc danh mục này sẽ tự động chuyển sang nhóm 'Không xác định' (null).")
                             .setPositiveButton("Xóa", (d, w) -> {
                                 firebaseHelper.deleteCategory(cat.getId(), () -> {
                                     Toast.makeText(context, "Đã xóa danh mục thành công!", Toast.LENGTH_SHORT).show();

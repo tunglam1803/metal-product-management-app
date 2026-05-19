@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
+    android:background="@color/colorBackground"
     android:scrollbars="none">
 
     <LinearLayout
@@ -11,12 +11,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- 1. Header Gradient -->
+        <!-- 1. Header Gradient with rounded bottom -->
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="200dp"
             android:background="@drawable/bg_header_green"
-            android:padding="20dp">
+            android:padding="24dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -30,8 +30,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Xin chào,"
-                    android:textColor="#E0F2F1"
-                    android:textSize="14sp" />
+                    android:textColor="#D4D0FF"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif" />
 
                 <TextView
                     android:id="@+id/tvUserEmail"
@@ -39,30 +40,33 @@
                     android:layout_height="wrap_content"
                     android:text="admin@gmail.com"
                     android:textColor="#FFFFFF"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:ellipsize="end"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:fontFamily="sans-serif-medium" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Chào mừng bạn quay lại hệ thống"
-                    android:textColor="#B2DFDB"
+                    android:textColor="#B8B0FF"
                     android:textSize="12sp"
-                    android:layout_marginTop="2dp" />
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="sans-serif" />
             </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardProfile"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                app:cardCornerRadius="25dp"
-                app:cardElevation="4dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                app:cardCornerRadius="26dp"
+                app:cardElevation="6dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                app:strokeWidth="0dp">
+                app:strokeWidth="2dp"
+                app:strokeColor="#40FFFFFF">
 
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -77,7 +81,8 @@
                         android:textColor="#FFFFFF"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:layout_gravity="center" />
+                        android:layout_gravity="center"
+                        android:fontFamily="sans-serif-medium" />
                 </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
         </RelativeLayout>
@@ -87,8 +92,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:layout_marginTop="-40dp">
+            android:paddingHorizontal="16dp"
+            android:layout_marginTop="-36dp">
 
             <!-- 2. Statistics Row -->
             <LinearLayout
@@ -100,27 +105,35 @@
                 <!-- Stats Card: Products -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="110dp"
+                    android:layout_height="120dp"
                     android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
                     app:strokeWidth="0dp"
-                    app:cardBackgroundColor="#FFFFFF">
+                    app:cardBackgroundColor="@color/card_bg">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp">
+                        android:padding="16dp">
 
-                        <ImageView
-                            android:id="@+id/iconProducts"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@android:drawable/ic_menu_agenda"
-                            app:tint="@color/colorPrimary"
+                        <FrameLayout
+                            android:id="@+id/iconProductsBg"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_icon_circle_purple"
                             android:layout_alignParentTop="true"
-                            android:layout_alignParentStart="true" />
+                            android:layout_alignParentStart="true">
+
+                            <ImageView
+                                android:id="@+id/iconProducts"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_menu_agenda"
+                                app:tint="@color/colorPrimary"
+                                android:layout_gravity="center" />
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -129,7 +142,8 @@
                             android:textColor="@color/colorTextGrey"
                             android:textSize="12sp"
                             android:layout_alignParentBottom="true"
-                            android:layout_alignParentStart="true" />
+                            android:layout_alignParentStart="true"
+                            android:fontFamily="sans-serif" />
 
                         <TextView
                             android:id="@+id/tvStatsProductsCount"
@@ -140,34 +154,43 @@
                             android:textSize="28sp"
                             android:textStyle="bold"
                             android:layout_alignParentEnd="true"
-                            android:layout_alignParentTop="true" />
+                            android:layout_alignParentTop="true"
+                            android:fontFamily="sans-serif-medium" />
                     </RelativeLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Stats Card: Categories -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="110dp"
+                    android:layout_height="120dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
                     app:strokeWidth="0dp"
-                    app:cardBackgroundColor="#FFFFFF">
+                    app:cardBackgroundColor="@color/card_bg">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp">
+                        android:padding="16dp">
 
-                        <ImageView
-                            android:id="@+id/iconCategories"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@android:drawable/ic_menu_view"
-                            app:tint="@color/colorAccentBlue"
+                        <FrameLayout
+                            android:id="@+id/iconCategoriesBg"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_icon_circle_blue"
                             android:layout_alignParentTop="true"
-                            android:layout_alignParentStart="true" />
+                            android:layout_alignParentStart="true">
+
+                            <ImageView
+                                android:id="@+id/iconCategories"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_menu_view"
+                                app:tint="@color/colorAccentBlue"
+                                android:layout_gravity="center" />
+                        </FrameLayout>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -176,7 +199,8 @@
                             android:textColor="@color/colorTextGrey"
                             android:textSize="12sp"
                             android:layout_alignParentBottom="true"
-                            android:layout_alignParentStart="true" />
+                            android:layout_alignParentStart="true"
+                            android:fontFamily="sans-serif" />
 
                         <TextView
                             android:id="@+id/tvStatsCategoriesCount"
@@ -187,7 +211,8 @@
                             android:textSize="28sp"
                             android:textStyle="bold"
                             android:layout_alignParentEnd="true"
-                            android:layout_alignParentTop="true" />
+                            android:layout_alignParentTop="true"
+                            android:fontFamily="sans-serif-medium" />
                     </RelativeLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
@@ -198,18 +223,19 @@
                 android:layout_height="wrap_content"
                 android:text="Phím tắt nhanh"
                 android:textColor="@color/colorTextDark"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="sans-serif-medium" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="3dp"
                 app:strokeWidth="0dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardBackgroundColor="@color/card_bg">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -221,7 +247,7 @@
                     <LinearLayout
                         android:id="@+id/btnActionProducts"
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
+                        android:layout_height="68dp"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
                         android:paddingHorizontal="16dp"
@@ -229,11 +255,18 @@
                         android:focusable="true"
                         android:background="?android:attr/selectableItemBackground">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_agenda"
-                            app:tint="@color/colorPrimary" />
+                        <FrameLayout
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/bg_icon_circle_green">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_menu_agenda"
+                                app:tint="@color/colorSuccess"
+                                android:layout_gravity="center" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -248,34 +281,37 @@
                                 android:text="Quản lý hàng hóa"
                                 android:textColor="@color/colorTextDark"
                                 android:textSize="14sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif-medium" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Xem toàn bộ danh sách sản phẩm"
                                 android:textColor="@color/colorTextGrey"
-                                android:textSize="12sp" />
+                                android:textSize="12sp"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="sans-serif" />
                         </LinearLayout>
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:src="@android:drawable/ic_media_play"
-                            app:tint="@color/colorTextGrey" />
+                            app:tint="@color/text_hint" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#F1F3F4"
+                        android:background="@color/divider"
                         android:layout_marginHorizontal="16dp" />
 
                     <!-- Action: Add Product -->
                     <LinearLayout
                         android:id="@+id/btnActionAddProduct"
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
+                        android:layout_height="68dp"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
                         android:paddingHorizontal="16dp"
@@ -283,11 +319,18 @@
                         android:focusable="true"
                         android:background="?android:attr/selectableItemBackground">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_add"
-                            app:tint="@color/colorAccentBlue" />
+                        <FrameLayout
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/bg_icon_circle_blue">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_menu_add"
+                                app:tint="@color/colorInfo"
+                                android:layout_gravity="center" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -302,34 +345,37 @@
                                 android:text="Thêm sản phẩm mới"
                                 android:textColor="@color/colorTextDark"
                                 android:textSize="14sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif-medium" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Nhập sản phẩm cơ khí, linh kiện"
                                 android:textColor="@color/colorTextGrey"
-                                android:textSize="12sp" />
+                                android:textSize="12sp"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="sans-serif" />
                         </LinearLayout>
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:src="@android:drawable/ic_media_play"
-                            app:tint="@color/colorTextGrey" />
+                            app:tint="@color/text_hint" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#F1F3F4"
+                        android:background="@color/divider"
                         android:layout_marginHorizontal="16dp" />
 
                     <!-- Action: Add Category -->
                     <LinearLayout
                         android:id="@+id/btnActionAddCategory"
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
+                        android:layout_height="68dp"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
                         android:paddingHorizontal="16dp"
@@ -337,11 +383,18 @@
                         android:focusable="true"
                         android:background="?android:attr/selectableItemBackground">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_input_add"
-                            app:tint="@color/colorPriceOrange" />
+                        <FrameLayout
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/bg_icon_circle_orange">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_input_add"
+                                app:tint="@color/colorWarning"
+                                android:layout_gravity="center" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -356,21 +409,24 @@
                                 android:text="Thêm danh mục mới"
                                 android:textColor="@color/colorTextDark"
                                 android:textSize="14sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif-medium" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Tạo thêm nhóm sản phẩm cơ khí"
                                 android:textColor="@color/colorTextGrey"
-                                android:textSize="12sp" />
+                                android:textSize="12sp"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="sans-serif" />
                         </LinearLayout>
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:src="@android:drawable/ic_media_play"
-                            app:tint="@color/colorTextGrey" />
+                            app:tint="@color/text_hint" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -381,16 +437,18 @@
                 android:layout_height="wrap_content"
                 android:text="Sản phẩm mới cập nhật"
                 android:textColor="@color/colorTextDark"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="sans-serif-medium" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvRecentProducts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
+                android:nestedScrollingEnabled="false"
+                android:paddingBottom="16dp" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

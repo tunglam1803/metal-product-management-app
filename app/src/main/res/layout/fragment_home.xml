@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@color/colorBackground">
 
     <!-- 1. Top Search Bar Toolbar -->
     <LinearLayout
@@ -13,8 +13,9 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp"
-        android:background="#FFFFFF">
+        android:paddingVertical="10dp"
+        android:background="@color/colorSurface"
+        android:elevation="2dp">
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -22,41 +23,42 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_back"
-            app:tint="#555555"
+            app:tint="@color/colorTextDark"
             android:contentDescription="Quay lại" />
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="42dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_search_round"
-            android:paddingHorizontal="10dp">
+            android:paddingHorizontal="12dp">
 
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:src="@android:drawable/ic_menu_search"
-                app:tint="#757575" />
+                app:tint="@color/text_hint" />
 
             <EditText
                 android:id="@+id/etSearch"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="8dp"
                 android:layout_marginEnd="6dp"
                 android:background="@android:color/transparent"
                 android:hint="Tìm tên, mã SKU, ..."
                 android:textSize="13sp"
                 android:textColor="@color/colorTextDark"
-                android:textColorHint="#999999"
+                android:textColorHint="@color/text_hint"
                 android:inputType="text"
                 android:singleLine="true"
-                android:imeOptions="actionSearch" />
+                android:imeOptions="actionSearch"
+                android:fontFamily="sans-serif" />
 
             <ImageButton
                 android:id="@+id/btnScan"
@@ -64,7 +66,7 @@
                 android:layout_height="28dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_camera"
-                app:tint="#757575"
+                app:tint="@color/colorPrimary"
                 android:contentDescription="Quét mã vạch" />
         </LinearLayout>
 
@@ -74,7 +76,7 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_sort_by_size"
-            app:tint="#555555"
+            app:tint="@color/colorTextGrey"
             android:contentDescription="Sắp xếp" />
 
         <ImageButton
@@ -83,7 +85,7 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_dialog_dialer"
-            app:tint="#555555"
+            app:tint="@color/colorTextGrey"
             android:contentDescription="Đổi kiểu lưới" />
     </LinearLayout>
 
@@ -92,7 +94,7 @@
         android:id="@+id/divider1"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#E0E0E0"
+        android:background="@color/divider"
         android:layout_below="@id/llToolbar" />
 
     <!-- 2. Horizontal Tabs -->
@@ -101,7 +103,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="#FFFFFF"
+        android:background="@color/colorSurface"
         android:layout_below="@id/divider1">
 
         <!-- Tab Sản Phẩm (Active) -->
@@ -112,7 +114,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="10dp"
+            android:paddingVertical="12dp"
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground">
@@ -122,12 +124,13 @@
                 android:text="Sản phẩm"
                 android:textColor="@color/colorTabActive"
                 android:textStyle="bold"
-                android:textSize="13sp" />
+                android:textSize="13sp"
+                android:fontFamily="sans-serif-medium" />
             <View
-                android:layout_width="40dp"
+                android:layout_width="32dp"
                 android:layout_height="3dp"
                 android:background="@color/colorTabActive"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="6dp"/>
         </LinearLayout>
 
         <!-- Tab Tồn Kho -->
@@ -138,7 +141,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="10dp"
+            android:paddingVertical="12dp"
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground">
@@ -146,13 +149,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tồn kho"
-                android:textColor="#757575"
-                android:textSize="13sp" />
+                android:textColor="@color/colorTextGrey"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif" />
             <View
-                android:layout_width="40dp"
+                android:layout_width="32dp"
                 android:layout_height="3dp"
                 android:background="@android:color/transparent"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="6dp"/>
         </LinearLayout>
 
         <!-- Tab Bán Kèm -->
@@ -163,7 +167,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="10dp"
+            android:paddingVertical="12dp"
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground">
@@ -171,13 +175,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Bán kèm"
-                android:textColor="#757575"
-                android:textSize="13sp" />
+                android:textColor="@color/colorTextGrey"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif" />
             <View
-                android:layout_width="40dp"
+                android:layout_width="32dp"
                 android:layout_height="3dp"
                 android:background="@android:color/transparent"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="6dp"/>
         </LinearLayout>
 
         <!-- Tab Danh Mục -->
@@ -188,7 +193,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="10dp"
+            android:paddingVertical="12dp"
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackground">
@@ -196,13 +201,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Danh mục"
-                android:textColor="#757575"
-                android:textSize="13sp" />
+                android:textColor="@color/colorTextGrey"
+                android:textSize="13sp"
+                android:fontFamily="sans-serif" />
             <View
-                android:layout_width="40dp"
+                android:layout_width="32dp"
                 android:layout_height="3dp"
                 android:background="@android:color/transparent"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="6dp"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -210,7 +216,7 @@
         android:id="@+id/divider2"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#E0E0E0"
+        android:background="@color/divider"
         android:layout_below="@id/llTabs" />
 
     <!-- 3. Horizontal Pill Filters -->
@@ -220,8 +226,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="#FFFFFF"
-        android:paddingVertical="8dp"
+        android:background="@color/colorSurface"
+        android:paddingVertical="10dp"
         android:paddingHorizontal="12dp"
         android:layout_below="@id/divider2">
 
@@ -245,11 +251,12 @@
                     android:text="Tất cả"
                     android:textColor="@color/colorPillActiveBorder"
                     android:background="@drawable/bg_pill_active"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"
                     android:textSize="12sp"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:fontFamily="sans-serif-medium" />
 
                 <!-- Pill: Đồ máy -->
                 <TextView
@@ -258,13 +265,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="Đồ máy"
-                    android:textColor="#5F6368"
+                    android:textColor="@color/colorTextGrey"
                     android:background="@drawable/bg_pill_inactive"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"
                     android:textSize="12sp"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:fontFamily="sans-serif" />
 
                 <!-- Pill: Phụ kiện sửa chữa -->
                 <TextView
@@ -273,13 +281,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="Phụ kiện sửa chữa"
-                    android:textColor="#5F6368"
+                    android:textColor="@color/colorTextGrey"
                     android:background="@drawable/bg_pill_inactive"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"
                     android:textSize="12sp"
                     android:clickable="true"
-                    android:focusable="true" />
+                    android:focusable="true"
+                    android:fontFamily="sans-serif" />
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -289,7 +298,7 @@
             android:layout_height="28dp"
             android:layout_marginStart="12dp"
             android:src="@android:drawable/ic_dialog_dialer"
-            app:tint="#1A73E8"
+            app:tint="@color/colorPrimary"
             android:contentDescription="Lưới"
             android:clickable="true"
             android:focusable="true" />
@@ -303,7 +312,7 @@
         android:layout_below="@id/llFilters"
         android:clipToPadding="false"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="4dp" />
+        android:paddingVertical="6dp" />
 
     <!-- 5. Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -312,11 +321,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
+        android:layout_margin="20dp"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/colorAccentBlue"
+        app:backgroundTint="@color/colorPrimary"
         app:tint="#FFFFFF"
-        app:elevation="6dp"
+        app:elevation="8dp"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.FAB"
         android:contentDescription="Thêm sản phẩm" />
 
 </RelativeLayout>

@@ -10,9 +10,12 @@ public class Product {
     private Long created_at;
     private Long updated_at;
     private String category_id;
+    private Integer stock_quantity;
+    private Boolean is_bundle;
 
     public Product() {
-        // Default constructor required for calls to DataSnapshot.getValue(Product.class)
+        // Default constructor required for calls to
+        // DataSnapshot.getValue(Product.class)
     }
 
     public String getId() {
@@ -85,5 +88,21 @@ public class Product {
 
     public void setCategory_id(String category_id) {
         this.category_id = category_id;
+    }
+
+    public Integer getStock_quantity() {
+        return stock_quantity != null ? stock_quantity : 0;
+    }
+
+    public void setStock_quantity(Integer stock_quantity) {
+        this.stock_quantity = stock_quantity;
+    }
+
+    public Boolean getIs_bundle() {
+        return is_bundle != null ? is_bundle : false;
+    }
+
+    public void setIs_bundle(Boolean is_bundle) {
+        this.is_bundle = is_bundle;
     }
 }
