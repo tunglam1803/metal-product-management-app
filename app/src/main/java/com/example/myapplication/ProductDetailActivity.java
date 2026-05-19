@@ -39,6 +39,7 @@ import com.example.myapplication.models.PriceHistory;
 import com.example.myapplication.models.Product;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.ByteArrayOutputStream;
@@ -58,7 +59,8 @@ import okhttp3.Response;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
-    private EditText etProductCode, etProductName, etImportPrice, etSellPrice;
+    private EditText etProductCode, etProductName, etImportPrice, etSellPrice, etStockQuantity;
+    private SwitchMaterial swIsBundle;
     private Button btnSave, btnViewHistory;
     private ImageView imgPreview;
     private View btnPickImage;
@@ -147,6 +149,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         etProductName = findViewById(R.id.etProductName);
         etImportPrice = findViewById(R.id.etImportPrice);
         etSellPrice = findViewById(R.id.etSellPrice);
+        etStockQuantity = findViewById(R.id.etStockQuantity);
+        swIsBundle = findViewById(R.id.swIsBundle);
         btnSave = findViewById(R.id.btnSave);
         btnViewHistory = findViewById(R.id.btnViewHistory);
         imgPreview = findViewById(R.id.imgPreview);
@@ -165,6 +169,8 @@ public class ProductDetailActivity extends AppCompatActivity {
                 etProductName.setText(currentProduct.getProduct_name());
                 etImportPrice.setText(String.valueOf(currentProduct.getImport_price().longValue()));
                 etSellPrice.setText(String.valueOf(currentProduct.getSell_price().longValue()));
+                etStockQuantity.setText(String.valueOf(currentProduct.getStock_quantity()));
+                swIsBundle.setChecked(currentProduct.getIs_bundle());
                 uploadedImageUrl = currentProduct.getImage_url();
 
                 selectCurrentProductCategory();
@@ -299,6 +305,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         String name = etProductName.getText().toString().trim();
         String sImport = etImportPrice.getText().toString().trim();
         String sSell = etSellPrice.getText().toString().trim();
+        String sStock = etStockQuantity.getText().toString().trim();
 
         if (name.isEmpty()) {
             etProductName.setError("Vui lòng nhập tên");
@@ -307,12 +314,16 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         double importPrice = sImport.isEmpty() ? 0 : Double.parseDouble(sImport);
         double sellPrice = sSell.isEmpty() ? 0 : Double.parseDouble(sSell);
+        int stockQuantity = sStock.isEmpty() ? 0 : Integer.parseInt(sStock);
+        boolean isBundle = swIsBundle.isChecked();
 
         Product p = new Product();
         p.setProduct_code(code);
         p.setProduct_name(name);
         p.setImport_price(importPrice);
         p.setSell_price(sellPrice);
+        p.setStock_quantity(stockQuantity);
+        p.setIs_bundle(isBundle);
         p.setImage_url(uploadedImageUrl);
 
         if (spCategory.getSelectedItemPosition() != AdapterView.INVALID_POSITION
