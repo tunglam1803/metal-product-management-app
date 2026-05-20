@@ -21,6 +21,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.content.ContextCompat;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -81,6 +85,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private String uploadedImageUrl = null;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private ActivityResultLauncher<Uri> cameraLauncher;
+    private ActivityResultLauncher<String> cameraPermissionLauncher;
     private Uri cameraPhotoUri;
     private Spinner spCategory;
     private final List<Category> categoriesList = new ArrayList<>();
@@ -264,7 +269,29 @@ public class ProductDetailActivity extends AppCompatActivity {
                     }
                 });
 
+        cameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        openCamera();
+                    } else {
+                        Toast.makeText(this, "Bạn cần cấp quyền Camera để chụp ảnh!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
         btnPickImage.setOnClickListener(v -> showImageSourceChooser());
+    }
+
+    private void openCamera() {
+        try {
+            File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    "product_" + System.currentTimeMillis() + ".jpg");
+            cameraPhotoUri = FileProvider.getUriForFile(this,
+                    getPackageName() + ".fileprovider", photoFile);
+            cameraLauncher.launch(cameraPhotoUri);
+        } catch (Exception e) {
+            Toast.makeText(this, "Không thể mở camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showImageSourceChooser() {
@@ -274,14 +301,10 @@ public class ProductDetailActivity extends AppCompatActivity {
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
                         // Camera
-                        try {
-                            File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                                    "product_" + System.currentTimeMillis() + ".jpg");
-                            cameraPhotoUri = FileProvider.getUriForFile(this,
-                                    getPackageName() + ".fileprovider", photoFile);
-                            cameraLauncher.launch(cameraPhotoUri);
-                        } catch (Exception e) {
-                            Toast.makeText(this, "Không thể mở camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                            openCamera();
+                        } else {
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
                         }
                     } else {
                         // Gallery
