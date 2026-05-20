@@ -6,13 +6,18 @@ import android.graphics.Typeface;
 import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.myapplication.fragment.DashboardFragment;
@@ -31,8 +36,31 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Apply system bar insets so bottom nav doesn't overlap with system navigation
+        View customBottomBar = findViewById(R.id.customBottomBar);
+        View btnScanGlobalView = findViewById(R.id.btnScanGlobal);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            // Add bottom padding to the bottom bar
+            customBottomBar.setPadding(
+                customBottomBar.getPaddingLeft(),
+                customBottomBar.getPaddingTop(),
+                customBottomBar.getPaddingRight(),
+                insets.bottom
+            );
+            ViewGroup.LayoutParams barParams = customBottomBar.getLayoutParams();
+            barParams.height = (int) (76 * getResources().getDisplayMetrics().density) + insets.bottom;
+            customBottomBar.setLayoutParams(barParams);
+            // Adjust the scan button margin to account for the nav bar
+            ViewGroup.MarginLayoutParams scanParams = (ViewGroup.MarginLayoutParams) btnScanGlobalView.getLayoutParams();
+            scanParams.bottomMargin = (int) (32 * getResources().getDisplayMetrics().density) + insets.bottom;
+            btnScanGlobalView.setLayoutParams(scanParams);
+            return windowInsets;
+        });
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() == null) {
