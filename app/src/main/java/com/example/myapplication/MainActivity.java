@@ -40,11 +40,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Apply system bar insets so bottom nav doesn't overlap with system navigation
+        // Apply system bar insets so bottom nav doesn't overlap with system navigation and top doesn't hide behind status bar
+        View fragmentContainer = findViewById(R.id.fragment_container);
         View customBottomBar = findViewById(R.id.customBottomBar);
         View btnScanGlobalView = findViewById(R.id.btnScanGlobal);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            
+            // Adjust fragment container top padding for the status bar height
+            fragmentContainer.setPadding(
+                fragmentContainer.getPaddingLeft(),
+                insets.top,
+                fragmentContainer.getPaddingRight(),
+                fragmentContainer.getPaddingBottom()
+            );
+
             // Add bottom padding to the bottom bar
             customBottomBar.setPadding(
                 customBottomBar.getPaddingLeft(),
