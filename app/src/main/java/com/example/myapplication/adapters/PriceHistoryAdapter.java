@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 import com.example.myapplication.models.PriceHistory;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,8 +36,8 @@ public class PriceHistoryAdapter extends RecyclerView.Adapter<PriceHistoryAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PriceHistory h = histories.get(position);
-        holder.tvHistoryImportPrice.setText(String.format(Locale.getDefault(), "%,.0fđ -> %,.0fđ", h.getOld_import_price(), h.getNew_import_price()));
-        holder.tvHistorySellPrice.setText(String.format(Locale.getDefault(), "%,.0fđ -> %,.0fđ", h.getOld_sell_price(), h.getNew_sell_price()));
+        holder.tvHistoryImportPrice.setText(formatCurrency(h.getOld_import_price()) + " -> " + formatCurrency(h.getNew_import_price()));
+        holder.tvHistorySellPrice.setText(formatCurrency(h.getOld_sell_price()) + " -> " + formatCurrency(h.getNew_sell_price()));
         
         if (h.getChanged_at() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault());
@@ -49,6 +51,14 @@ public class PriceHistoryAdapter extends RecyclerView.Adapter<PriceHistoryAdapte
     @Override
     public int getItemCount() {
         return histories.size();
+    }
+
+    private String formatCurrency(Double amount) {
+        if (amount == null) return "0đ";
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
+        symbols.setGroupingSeparator('.');
+        DecimalFormat df = new DecimalFormat("#,##0", symbols);
+        return df.format(amount) + "đ";
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

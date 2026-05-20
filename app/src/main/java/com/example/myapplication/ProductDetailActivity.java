@@ -6,6 +6,10 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,6 +26,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -39,15 +44,20 @@ import com.example.myapplication.models.PriceHistory;
 import com.example.myapplication.models.Product;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -70,6 +80,8 @@ public class ProductDetailActivity extends AppCompatActivity {
     private Product currentProduct;
     private String uploadedImageUrl = null;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ActivityResultLauncher<Uri> cameraLauncher;
+    private Uri cameraPhotoUri;
     private Spinner spCategory;
     private final List<Category> categoriesList = new ArrayList<>();
     private ArrayAdapter<String> categoryAdapter;
@@ -124,6 +136,10 @@ public class ProductDetailActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> saveProduct());
         btnViewHistory.setOnClickListener(v -> showPriceHistory());
         imgPreview.setOnClickListener(v -> showFullScreenImage());
+
+        // Setup currency formatting for price fields
+        setupCurrencyFormatting(etImportPrice);
+        setupCurrencyFormatting(etSellPrice);
     }
 
     private void showFullScreenImage() {
@@ -167,8 +183,8 @@ public class ProductDetailActivity extends AppCompatActivity {
                 currentProduct.setId(documentSnapshot.getId());
                 etProductCode.setText(currentProduct.getProduct_code());
                 etProductName.setText(currentProduct.getProduct_name());
-                etImportPrice.setText(String.valueOf(currentProduct.getImport_price().longValue()));
-                etSellPrice.setText(String.valueOf(currentProduct.getSell_price().longValue()));
+                setCurrencyValue(etImportPrice, currentProduct.getImport_price().longValue());
+                setCurrencyValue(etSellPrice, currentProduct.getSell_price().longValue());
                 etStockQuantity.setText(String.valueOf(currentProduct.getStock_quantity()));
                 swIsBundle.setChecked(currentProduct.getIs_bundle());
                 uploadedImageUrl = currentProduct.getImage_url();
@@ -237,11 +253,44 @@ public class ProductDetailActivity extends AppCompatActivity {
                     }
                 });
 
-        btnPickImage.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            imagePickerLauncher.launch(intent);
-        });
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.TakePicture(),
+                success -> {
+                    if (success && cameraPhotoUri != null) {
+                        imgPreview.setImageTintList(null);
+                        imgPreview.setImageURI(cameraPhotoUri);
+                        imgPreview.setPadding(0, 0, 0, 0);
+                        uploadImageToSupabase(cameraPhotoUri);
+                    }
+                });
+
+        btnPickImage.setOnClickListener(v -> showImageSourceChooser());
+    }
+
+    private void showImageSourceChooser() {
+        String[] options = {"Chụp ảnh", "Chọn từ thư viện"};
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Chọn ảnh sản phẩm")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        // Camera
+                        try {
+                            File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                                    "product_" + System.currentTimeMillis() + ".jpg");
+                            cameraPhotoUri = FileProvider.getUriForFile(this,
+                                    getPackageName() + ".fileprovider", photoFile);
+                            cameraLauncher.launch(cameraPhotoUri);
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Không thể mở camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        // Gallery
+                        Intent intent = new Intent(Intent.ACTION_PICK);
+                        intent.setType("image/*");
+                        imagePickerLauncher.launch(intent);
+                    }
+                })
+                .show();
     }
 
     private void uploadImageToSupabase(Uri uri) {
@@ -312,8 +361,8 @@ public class ProductDetailActivity extends AppCompatActivity {
             return;
         }
 
-        double importPrice = sImport.isEmpty() ? 0 : Double.parseDouble(sImport);
-        double sellPrice = sSell.isEmpty() ? 0 : Double.parseDouble(sSell);
+        double importPrice = sImport.isEmpty() ? 0 : Double.parseDouble(sImport.replace(".", ""));
+        double sellPrice = sSell.isEmpty() ? 0 : Double.parseDouble(sSell.replace(".", ""));
         int stockQuantity = sStock.isEmpty() ? 0 : Integer.parseInt(sStock);
         boolean isBundle = swIsBundle.isChecked();
 
@@ -437,5 +486,54 @@ public class ProductDetailActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    // --- Currency formatting helpers ---
+
+    private String formatCurrencyText(long amount) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
+        symbols.setGroupingSeparator('.');
+        DecimalFormat df = new DecimalFormat("#,##0", symbols);
+        return df.format(amount);
+    }
+
+    private void setCurrencyValue(EditText editText, long value) {
+        editText.setText(value > 0 ? formatCurrencyText(value) : "");
+    }
+
+    private void setupCurrencyFormatting(EditText editText) {
+        editText.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().equals(current)) return;
+                editText.removeTextChangedListener(this);
+
+                String cleanString = s.toString().replace(".", "");
+                if (cleanString.isEmpty()) {
+                    current = "";
+                    editText.setText("");
+                } else {
+                    try {
+                        long parsed = Long.parseLong(cleanString);
+                        String formatted = formatCurrencyText(parsed);
+                        current = formatted;
+                        editText.setText(formatted);
+                        editText.setSelection(formatted.length());
+                    } catch (NumberFormatException e) {
+                        // Restore previous value if parsing fails
+                    }
+                }
+
+                editText.addTextChangedListener(this);
+            }
+        });
     }
 }

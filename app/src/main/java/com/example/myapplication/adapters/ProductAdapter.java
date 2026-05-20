@@ -21,6 +21,8 @@ import com.example.myapplication.R;
 import com.example.myapplication.models.Category;
 import com.example.myapplication.models.Product;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -140,7 +142,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
     private String formatCurrency(Double amount) {
         if (amount == null) return "0 đ";
-        return String.format(Locale.getDefault(), "%,.0f đ", amount);
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
+        symbols.setGroupingSeparator('.');
+        DecimalFormat df = new DecimalFormat("#,##0", symbols);
+        return df.format(amount) + " đ";
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
