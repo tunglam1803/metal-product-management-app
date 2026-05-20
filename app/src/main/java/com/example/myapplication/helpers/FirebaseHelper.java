@@ -55,6 +55,8 @@ public class FirebaseHelper {
         map.put("sell_price", product.getSell_price());
         map.put("image_url", product.getImage_url());
         map.put("category_id", product.getCategory_id());
+        map.put("stock_quantity", product.getStock_quantity());
+        map.put("is_bundle", product.getIs_bundle());
         map.put("created_at", now);
         map.put("updated_at", now);
 
@@ -91,6 +93,8 @@ public class FirebaseHelper {
         map.put("sell_price", updatedProduct.getSell_price());
         map.put("image_url", updatedProduct.getImage_url());
         map.put("category_id", updatedProduct.getCategory_id());
+        map.put("stock_quantity", updatedProduct.getStock_quantity());
+        map.put("is_bundle", updatedProduct.getIs_bundle());
         map.put("updated_at", now);
 
         db.collection("products")
