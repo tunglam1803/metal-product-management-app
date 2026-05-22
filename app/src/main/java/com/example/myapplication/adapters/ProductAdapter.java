@@ -72,6 +72,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return isGridView ? 1 : 0;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -141,7 +146,35 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
         // Handle click on Share Button
         holder.btnShare.setOnClickListener(v -> {
-            Toast.makeText(context, "Đang chuẩn bị chia sẻ sản phẩm " + product.getProduct_name() + "...", Toast.LENGTH_SHORT).show();
+            android.content.Intent shareIntent = new android.content.Intent(android.content.Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+
+            String catName = "Khác";
+            if (product.getCategory_id() != null && categoriesMap.containsKey(product.getCategory_id())) {
+                catName = categoriesMap.get(product.getCategory_id());
+            }
+
+            StringBuilder shareBody = new StringBuilder();
+            shareBody.append("📦 Tên sản phẩm: ").append(product.getProduct_name()).append("\n");
+            shareBody.append("💵 Giá bán: ").append(formatCurrency(product.getSell_price())).append("\n");
+            shareBody.append("📊 Số lượng tồn kho: ").append(product.getStock_quantity()).append(" cái\n");
+            shareBody.append("🏷️ Danh mục: ").append(catName).append("\n");
+
+            if (product.getNote() != null && !product.getNote().isEmpty()) {
+                shareBody.append("📝 Ghi chú: ").append(product.getNote()).append("\n");
+            }
+
+            if (product.getImage_url() != null && !product.getImage_url().isEmpty()) {
+                String finalUrl = product.getImage_url();
+                if (finalUrl.contains("/object/public/")) {
+                    finalUrl = finalUrl.replace("/object/public/", "/object/");
+                }
+                shareBody.append("🖼️ Hình ảnh: ").append(finalUrl).append("\n");
+            }
+
+            shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Thông tin sản phẩm: " + product.getProduct_name());
+            shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody.toString());
+            context.startActivity(android.content.Intent.createChooser(shareIntent, "Chia sẻ sản phẩm qua"));
         });
     }
 

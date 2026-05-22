@@ -82,9 +82,11 @@ public class HomeFragment extends Fragment {
     private boolean isGridView = false;
     private int currentTab = 0; // 0=Sản phẩm, 1=Tồn kho, 2=Bán kèm
     private ImageButton btnGridToggle;
-    private View tabProducts, tabInventory, tabBundle;
+    private View tabProducts, tabInventory, tabBundle, tabCategory;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ListenerRegistration productsListener;
+    
+    private com.example.myapplication.adapters.CategoryAdapter categoryAdapter;
 
     @Nullable
     @Override
@@ -129,7 +131,7 @@ public class HomeFragment extends Fragment {
         tabProducts = view.findViewById(R.id.tabProducts);
         tabInventory = view.findViewById(R.id.tabInventory);
         tabBundle = view.findViewById(R.id.tabBundle);
-        View tabCategory = view.findViewById(R.id.tabCategory);
+        tabCategory = view.findViewById(R.id.tabCategory);
 
         llPillsContainer = view.findViewById(R.id.llPillsContainer);
         View btnPillsGrid = view.findViewById(R.id.btnPillsGrid);
@@ -141,9 +143,21 @@ public class HomeFragment extends Fragment {
             intent.putExtra("PRODUCT_ID", product.getId());
             startActivity(intent);
         });
+        
+        categoryAdapter = new com.example.myapplication.adapters.CategoryAdapter(getContext(), 
+            cat -> editCategoryFromList(cat),
+            cat -> deleteCategoryFromList(cat)
+        );
+        
         rvProducts.setAdapter(adapter);
 
         ItemTouchHelper.SimpleCallback swipeCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                if (currentTab == 3) return 0;
+                return super.getSwipeDirs(recyclerView, viewHolder);
+            }
+
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
                     @NonNull RecyclerView.ViewHolder target) {
@@ -373,29 +387,21 @@ public class HomeFragment extends Fragment {
         btnGridToggle.setOnClickListener(v -> toggleGridView());
 
         // 5. Thiết lập sự kiện cho các Tab ngang
-        tabProducts.setOnClickListener(v -> {
-            currentTab = 0;
-            updateTabStyles();
-            filterProducts(etSearch.getText().toString());
-        });
-        tabInventory.setOnClickListener(v -> {
-            currentTab = 1;
-            updateTabStyles();
-            filterProducts(etSearch.getText().toString());
-        });
-        tabBundle.setOnClickListener(v -> {
-            currentTab = 2;
-            updateTabStyles();
-            filterProducts(etSearch.getText().toString());
-        });
-        tabCategory.setOnClickListener(v -> showCategoryManagerDialog());
+        tabProducts.setOnClickListener(v -> selectTab(0));
+        tabInventory.setOnClickListener(v -> selectTab(1));
+        tabBundle.setOnClickListener(v -> selectTab(2));
+        tabCategory.setOnClickListener(v -> selectTab(3));
 
         // 6. Thiết lập sự kiện cho các Pills nhãn lọc
         btnPillsGrid.setOnClickListener(v -> showCategoriesBottomSheet());
 
         // 7. Thiết lập sự kiện nút FAB
         fabAdd.setOnClickListener(v -> {
-            startActivity(new Intent(getActivity(), ProductDetailActivity.class));
+            if (currentTab == 3) {
+                showAddCategoryDialog();
+            } else {
+                startActivity(new Intent(getActivity(), ProductDetailActivity.class));
+            }
         });
 
         // 8. Tải dữ liệu & Debounce Tìm kiếm
@@ -552,24 +558,48 @@ public class HomeFragment extends Fragment {
         int transparent = Color.TRANSPARENT;
 
         // Sản phẩm
-        ((TextView) ((ViewGroup) tabProducts).getChildAt(0))
-                .setTextColor(currentTab == 0 ? activeColor : inactiveColor);
-        ((TextView) ((ViewGroup) tabProducts).getChildAt(0)).setTypeface(null,
-                currentTab == 0 ? Typeface.BOLD : Typeface.NORMAL);
+        ((TextView) ((ViewGroup) tabProducts).getChildAt(0)).setTextColor(currentTab == 0 ? activeColor : inactiveColor);
+        ((TextView) ((ViewGroup) tabProducts).getChildAt(0)).setTypeface(null, currentTab == 0 ? Typeface.BOLD : Typeface.NORMAL);
         ((ViewGroup) tabProducts).getChildAt(1).setBackgroundColor(currentTab == 0 ? activeColor : transparent);
 
         // Tồn kho
-        ((TextView) ((ViewGroup) tabInventory).getChildAt(0))
-                .setTextColor(currentTab == 1 ? activeColor : inactiveColor);
-        ((TextView) ((ViewGroup) tabInventory).getChildAt(0)).setTypeface(null,
-                currentTab == 1 ? Typeface.BOLD : Typeface.NORMAL);
+        ((TextView) ((ViewGroup) tabInventory).getChildAt(0)).setTextColor(currentTab == 1 ? activeColor : inactiveColor);
+        ((TextView) ((ViewGroup) tabInventory).getChildAt(0)).setTypeface(null, currentTab == 1 ? Typeface.BOLD : Typeface.NORMAL);
         ((ViewGroup) tabInventory).getChildAt(1).setBackgroundColor(currentTab == 1 ? activeColor : transparent);
 
         // Bán kèm
         ((TextView) ((ViewGroup) tabBundle).getChildAt(0)).setTextColor(currentTab == 2 ? activeColor : inactiveColor);
-        ((TextView) ((ViewGroup) tabBundle).getChildAt(0)).setTypeface(null,
-                currentTab == 2 ? Typeface.BOLD : Typeface.NORMAL);
+        ((TextView) ((ViewGroup) tabBundle).getChildAt(0)).setTypeface(null, currentTab == 2 ? Typeface.BOLD : Typeface.NORMAL);
         ((ViewGroup) tabBundle).getChildAt(1).setBackgroundColor(currentTab == 2 ? activeColor : transparent);
+
+        // Danh mục
+        ((TextView) ((ViewGroup) tabCategory).getChildAt(0)).setTextColor(currentTab == 3 ? activeColor : inactiveColor);
+        ((TextView) ((ViewGroup) tabCategory).getChildAt(0)).setTypeface(null, currentTab == 3 ? Typeface.BOLD : Typeface.NORMAL);
+        ((ViewGroup) tabCategory).getChildAt(1).setBackgroundColor(currentTab == 3 ? activeColor : transparent);
+    }
+    
+    private void selectTab(int tabIndex) {
+        currentTab = tabIndex;
+        updateTabStyles();
+        
+        if (currentTab == 3) {
+            rvProducts.setAdapter(categoryAdapter);
+            rvProducts.setLayoutManager(new LinearLayoutManager(getContext()));
+            llPillsContainer.setVisibility(View.GONE);
+            btnGridToggle.setVisibility(View.GONE);
+            categoryAdapter.setCategories(categoriesList);
+            // Hide filter buttons if necessary, though they don't apply to categories
+        } else {
+            rvProducts.setAdapter(adapter);
+            if (isGridView) {
+                rvProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
+            } else {
+                rvProducts.setLayoutManager(new LinearLayoutManager(getContext()));
+            }
+            llPillsContainer.setVisibility(View.VISIBLE);
+            btnGridToggle.setVisibility(View.VISIBLE);
+            filterProducts(etSearch.getText().toString());
+        }
     }
 
     private void hideKeyboard() {
@@ -595,6 +625,7 @@ public class HomeFragment extends Fragment {
                 }
 
                 adapter.setCategories(categoriesList);
+                categoryAdapter.setCategories(categoriesList);
                 populatePills();
             });
         });
@@ -777,7 +808,7 @@ public class HomeFragment extends Fragment {
                 btnEdit.setOnClickListener(v2 -> {
                     EditText etEdit = new EditText(context);
                     etEdit.setText(cat.getCategory_name());
-                    etEdit.setTextColor(textColorPrimary);
+                    etEdit.setTextColor(ContextCompat.getColor(context, R.color.colorTextDark));
                     etEdit.setHintTextColor(ContextCompat.getColor(context, R.color.text_hint));
                     etEdit.setSelection(etEdit.getText().length());
                     etEdit.setBackgroundResource(R.drawable.edit_text_background);
@@ -850,10 +881,108 @@ public class HomeFragment extends Fragment {
                 })
                 .setNegativeButton("Hủy", (dialog, which) -> {
                     Log.d("SWIPE_DELETE", "User clicked Negative Button: Hủy");
-                    Toast.makeText(getContext(), "Đã hủy thao tác xóa", Toast.LENGTH_SHORT).show();
                     resetSwipe();
                 })
-                .setCancelable(false)
+                .setOnDismissListener(dialog -> {
+                    Log.d("SWIPE_DELETE", "Dialog dismissed");
+                    resetSwipe();
+                })
+                .show();
+    }
+
+    private void showAddCategoryDialog() {
+        if (getContext() == null) return;
+        Context context = getContext();
+        
+        EditText etNew = new EditText(context);
+        etNew.setHint("Nhập tên danh mục mới...");
+        etNew.setTextColor(ContextCompat.getColor(context, R.color.colorTextDark));
+        etNew.setHintTextColor(ContextCompat.getColor(context, R.color.text_hint));
+        etNew.setBackgroundResource(R.drawable.edit_text_background);
+        etNew.setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12));
+
+        FrameLayout container = new FrameLayout(context);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = dpToPx(24);
+        params.rightMargin = dpToPx(24);
+        params.topMargin = dpToPx(16);
+        params.bottomMargin = dpToPx(16);
+        etNew.setLayoutParams(params);
+        container.addView(etNew);
+
+        new MaterialAlertDialogBuilder(context)
+                .setTitle("Thêm Danh Mục")
+                .setView(container)
+                .setPositiveButton("Thêm", (d, w) -> {
+                    String name = etNew.getText().toString().trim();
+                    if (!name.isEmpty()) {
+                        firebaseHelper.addCategory(name, () -> {
+                            Toast.makeText(context, "Đã thêm danh mục!", Toast.LENGTH_SHORT).show();
+                        }, err -> {
+                            Toast.makeText(context, "Lỗi thêm danh mục: " + err, Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void editCategoryFromList(Category cat) {
+        if (getContext() == null) return;
+        Context context = getContext();
+        
+        EditText etEdit = new EditText(context);
+        etEdit.setText(cat.getCategory_name());
+        etEdit.setTextColor(ContextCompat.getColor(context, R.color.colorTextDark));
+        etEdit.setHintTextColor(ContextCompat.getColor(context, R.color.text_hint));
+        etEdit.setSelection(etEdit.getText().length());
+        etEdit.setBackgroundResource(R.drawable.edit_text_background);
+        etEdit.setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12));
+
+        FrameLayout container = new FrameLayout(context);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = dpToPx(24);
+        params.rightMargin = dpToPx(24);
+        params.topMargin = dpToPx(16);
+        params.bottomMargin = dpToPx(16);
+        etEdit.setLayoutParams(params);
+        container.addView(etEdit);
+
+        new MaterialAlertDialogBuilder(context)
+                .setTitle("Sửa Tên Danh Mục")
+                .setView(container)
+                .setPositiveButton("Cập nhật", (d, w) -> {
+                    String newName = etEdit.getText().toString().trim();
+                    if (!newName.isEmpty()) {
+                        firebaseHelper.updateCategory(cat.getId(), newName, () -> {
+                            Toast.makeText(context, "Cập nhật danh mục thành công!", Toast.LENGTH_SHORT).show();
+                        }, err -> {
+                            Toast.makeText(context, "Lỗi: " + err, Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void deleteCategoryFromList(Category cat) {
+        if (getContext() == null) return;
+        Context context = getContext();
+        
+        new MaterialAlertDialogBuilder(context)
+                .setTitle("Xóa Danh Mục")
+                .setMessage("Bạn có chắc chắn muốn xóa danh mục '" + cat.getCategory_name()
+                        + "'?\n\nTất cả sản phẩm thuộc danh mục này sẽ tự động chuyển sang nhóm 'Không xác định' (null).")
+                .setPositiveButton("Xóa", (d, w) -> {
+                    firebaseHelper.deleteCategory(cat.getId(), () -> {
+                        Toast.makeText(context, "Đã xóa danh mục thành công!", Toast.LENGTH_SHORT).show();
+                    }, err -> {
+                        Toast.makeText(context, "Lỗi xóa: " + err, Toast.LENGTH_SHORT).show();
+                    });
+                })
+                .setNegativeButton("Hủy", null)
                 .show();
     }
 

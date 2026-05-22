@@ -259,7 +259,7 @@ public class DashboardFragment extends Fragment {
                 btnEdit.setOnClickListener(v2 -> {
                     EditText etEdit = new EditText(context);
                     etEdit.setText(cat.getCategory_name());
-                    etEdit.setTextColor(textColorPrimary);
+                    etEdit.setTextColor(ContextCompat.getColor(context, R.color.colorTextDark));
                     etEdit.setHintTextColor(ContextCompat.getColor(context, R.color.text_hint));
                     etEdit.setSelection(etEdit.getText().length());
                     etEdit.setBackgroundResource(R.drawable.edit_text_background);
