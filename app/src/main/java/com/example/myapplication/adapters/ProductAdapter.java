@@ -98,6 +98,16 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         }
         holder.tvProductUnit.setText(categoryName);
 
+        // Bind stock quantity
+        int stock = product.getStock_quantity();
+        if (stock > 0) {
+            holder.tvStockQuantity.setText("Còn: " + stock + " cái");
+            holder.tvStockQuantity.setTextColor(ContextCompat.getColor(context, R.color.colorTextGrey));
+        } else {
+            holder.tvStockQuantity.setText("Hết hàng");
+            holder.tvStockQuantity.setTextColor(ContextCompat.getColor(context, R.color.colorDanger));
+        }
+
         // Load image using Glide
         if (product.getImage_url() != null && !product.getImage_url().isEmpty()) {
             holder.imgProduct.setImageTintList(null);
@@ -150,7 +160,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgProduct;
-        TextView tvProductName, tvProductUnit, tvSellPriceNew;
+        TextView tvProductName, tvProductUnit, tvSellPriceNew, tvStockQuantity;
         View btnShare;
 
         public ViewHolder(@NonNull View itemView) {
@@ -159,6 +169,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             tvProductName = itemView.findViewById(R.id.tvProductName);
             tvProductUnit = itemView.findViewById(R.id.tvProductUnit);
             tvSellPriceNew = itemView.findViewById(R.id.tvSellPriceNew);
+            tvStockQuantity = itemView.findViewById(R.id.tvStockQuantity);
             btnShare = itemView.findViewById(R.id.btnShare);
         }
     }

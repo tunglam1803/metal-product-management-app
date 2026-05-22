@@ -25,11 +25,11 @@ public class FirebaseHelper {
         return null;
     }
 
-    public void listenForProducts(EventListener<QuerySnapshot> listener) {
+    public com.google.firebase.firestore.ListenerRegistration listenForProducts(EventListener<QuerySnapshot> listener) {
         String userId = getCurrentUserId();
         if (userId == null)
-            return;
-        db.collection("products")
+            return null;
+        return db.collection("products")
                 .whereEqualTo("user_id", userId)
                 .addSnapshotListener(listener);
     }
@@ -56,6 +56,7 @@ public class FirebaseHelper {
         map.put("image_url", product.getImage_url());
         map.put("category_id", product.getCategory_id());
         map.put("stock_quantity", product.getStock_quantity());
+        map.put("note", product.getNote());
         map.put("is_bundle", product.getIs_bundle());
         map.put("created_at", now);
         map.put("updated_at", now);
@@ -94,6 +95,7 @@ public class FirebaseHelper {
         map.put("image_url", updatedProduct.getImage_url());
         map.put("category_id", updatedProduct.getCategory_id());
         map.put("stock_quantity", updatedProduct.getStock_quantity());
+        map.put("note", updatedProduct.getNote());
         map.put("is_bundle", updatedProduct.getIs_bundle());
         map.put("updated_at", now);
 
@@ -160,11 +162,11 @@ public class FirebaseHelper {
                 });
     }
 
-    public void listenForCategories(EventListener<QuerySnapshot> listener) {
+    public com.google.firebase.firestore.ListenerRegistration listenForCategories(EventListener<QuerySnapshot> listener) {
         String userId = getCurrentUserId();
         if (userId == null)
-            return;
-        db.collection("categories")
+            return null;
+        return db.collection("categories")
                 .whereEqualTo("user_id", userId)
                 .addSnapshotListener(listener);
     }

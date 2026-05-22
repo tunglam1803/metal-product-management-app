@@ -290,6 +290,17 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <!-- Last Import Info -->
+                <TextView
+                    android:id="@+id/tvLastImportInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/text_hint"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif"
+                    android:visibility="gone" />
+
                 <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
@@ -323,6 +334,42 @@
                         android:inputType="number"
                         android:paddingStart="14dp"
                         android:paddingEnd="14dp"
+                        android:background="@drawable/edit_text_background"
+                        android:textColor="@color/colorTextDark"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif" />
+                </LinearLayout>
+
+                <!-- Note Form Group -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ghi chú"
+                        android:textColor="@color/colorTextDark"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp"
+                        android:fontFamily="sans-serif-medium" />
+
+                    <EditText
+                        android:id="@+id/etNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="80dp"
+                        android:hint="Nhập ghi chú, công dụng..."
+                        android:inputType="textMultiLine"
+                        android:gravity="top|start"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp"
                         android:background="@drawable/edit_text_background"
                         android:textColor="@color/colorTextDark"
                         android:textColorHint="@color/text_hint"
@@ -372,7 +419,21 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Buttons Section outside the card -->
+        <!-- Edit Button (visible in view mode only) -->
+        <android.widget.Button
+            android:id="@+id/btnEdit"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="✏️ Sửa Sản Phẩm"
+            android:textColor="@android:color/white"
+            android:background="@drawable/btn_primary"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone" />
+
+        <!-- Save Button (visible in edit mode only) -->
         <android.widget.Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"

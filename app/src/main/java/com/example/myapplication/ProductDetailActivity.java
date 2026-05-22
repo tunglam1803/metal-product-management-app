@@ -60,6 +60,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -73,9 +74,10 @@ import okhttp3.Response;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
-    private EditText etProductCode, etProductName, etImportPrice, etSellPrice, etStockQuantity;
+    private EditText etProductCode, etProductName, etImportPrice, etSellPrice, etStockQuantity, etNote;
     private SwitchMaterial swIsBundle;
-    private Button btnSave, btnViewHistory;
+    private Button btnSave, btnEdit, btnViewHistory;
+    private TextView tvLastImportInfo;
     private ImageView imgPreview;
     private View btnPickImage;
     private TextView tvUploadStatus;
@@ -92,6 +94,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ArrayAdapter<String> categoryAdapter;
     private ImageButton btnScanCode;
     private ActivityResultLauncher<Intent> barcodeScannerLauncher;
+    private boolean isEditMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,16 +113,20 @@ public class ProductDetailActivity extends AppCompatActivity {
         loadCategories();
 
         if (productId != null) {
-            toolbar.setTitle("Sửa Sản Phẩm");
+            toolbar.setTitle("Chi Tiết Sản Phẩm");
+            isEditMode = false;
             loadProductDetails();
             btnViewHistory.setVisibility(View.VISIBLE);
         } else {
             toolbar.setTitle("Thêm Sản Phẩm");
+            isEditMode = true;
             String prefilledCode = getIntent().getStringExtra("PRODUCT_CODE");
             if (prefilledCode != null && !prefilledCode.isEmpty()) {
                 etProductCode.setText(prefilledCode);
             }
         }
+        
+        setEditMode(isEditMode);
 
         barcodeScannerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -138,7 +145,12 @@ public class ProductDetailActivity extends AppCompatActivity {
             barcodeScannerLauncher.launch(intent);
         });
 
-        btnSave.setOnClickListener(v -> saveProduct());
+        btnSave.setOnClickListener(v -> handleSaveClick());
+        btnEdit.setOnClickListener(v -> {
+            isEditMode = true;
+            setEditMode(true);
+            toolbar.setTitle("Sửa Sản Phẩm");
+        });
         btnViewHistory.setOnClickListener(v -> showPriceHistory());
         imgPreview.setOnClickListener(v -> showFullScreenImage());
 
@@ -171,14 +183,49 @@ public class ProductDetailActivity extends AppCompatActivity {
         etImportPrice = findViewById(R.id.etImportPrice);
         etSellPrice = findViewById(R.id.etSellPrice);
         etStockQuantity = findViewById(R.id.etStockQuantity);
+        etNote = findViewById(R.id.etNote);
         swIsBundle = findViewById(R.id.swIsBundle);
         btnSave = findViewById(R.id.btnSave);
+        btnEdit = findViewById(R.id.btnEdit);
         btnViewHistory = findViewById(R.id.btnViewHistory);
+        tvLastImportInfo = findViewById(R.id.tvLastImportInfo);
         imgPreview = findViewById(R.id.imgPreview);
         btnPickImage = findViewById(R.id.btnPickImage);
         tvUploadStatus = findViewById(R.id.tvUploadStatus);
         spCategory = findViewById(R.id.spCategory);
         btnScanCode = findViewById(R.id.btnScanCode);
+    }
+    
+    private void setEditMode(boolean edit) {
+        etProductCode.setEnabled(edit);
+        etProductCode.setFocusableInTouchMode(edit);
+        etProductName.setEnabled(edit);
+        etProductName.setFocusableInTouchMode(edit);
+        etImportPrice.setEnabled(edit);
+        etImportPrice.setFocusableInTouchMode(edit);
+        etSellPrice.setEnabled(edit);
+        etSellPrice.setFocusableInTouchMode(edit);
+        etStockQuantity.setEnabled(edit);
+        etStockQuantity.setFocusableInTouchMode(edit);
+        etNote.setEnabled(edit);
+        etNote.setFocusableInTouchMode(edit);
+        
+        // Keep switch visually clear but disable interaction in view mode
+        swIsBundle.setClickable(edit);
+        swIsBundle.setOnTouchListener(edit ? null : (v, event) -> true);
+        
+        spCategory.setEnabled(edit);
+        
+        btnPickImage.setVisibility(edit ? View.VISIBLE : View.GONE);
+        btnScanCode.setVisibility(edit ? View.VISIBLE : View.GONE);
+        
+        if (productId != null) {
+            btnEdit.setVisibility(edit ? View.GONE : View.VISIBLE);
+            btnSave.setVisibility(edit ? View.VISIBLE : View.GONE);
+        } else {
+            btnEdit.setVisibility(View.GONE);
+            btnSave.setVisibility(View.VISIBLE);
+        }
     }
 
     private void loadProductDetails() {
@@ -191,10 +238,14 @@ public class ProductDetailActivity extends AppCompatActivity {
                 setCurrencyValue(etImportPrice, currentProduct.getImport_price().longValue());
                 setCurrencyValue(etSellPrice, currentProduct.getSell_price().longValue());
                 etStockQuantity.setText(String.valueOf(currentProduct.getStock_quantity()));
+                if (currentProduct.getNote() != null) {
+                    etNote.setText(currentProduct.getNote());
+                }
                 swIsBundle.setChecked(currentProduct.getIs_bundle());
                 uploadedImageUrl = currentProduct.getImage_url();
 
                 selectCurrentProductCategory();
+                loadLastImportInfo();
 
                 if (uploadedImageUrl != null && !uploadedImageUrl.isEmpty()) {
                     imgPreview.setImageTintList(null);
@@ -241,6 +292,41 @@ public class ProductDetailActivity extends AppCompatActivity {
 
                     tvUploadStatus.setText("Hình ảnh sản phẩm");
                 }
+            }
+        });
+    }
+
+    private void loadLastImportInfo() {
+        if (productId == null) return;
+        firebaseHelper.getPriceHistory(productId, (value, error) -> {
+            if (error != null || value == null || value.isEmpty()) {
+                tvLastImportInfo.setVisibility(View.GONE);
+                return;
+            }
+            
+            List<PriceHistory> histories = new ArrayList<>();
+            for (QueryDocumentSnapshot doc : value) {
+                PriceHistory h = doc.toObject(PriceHistory.class);
+                histories.add(h);
+            }
+            
+            histories.sort((h1, h2) -> {
+                Long t1 = h1.getChanged_at() != null ? h1.getChanged_at() : 0L;
+                Long t2 = h2.getChanged_at() != null ? h2.getChanged_at() : 0L;
+                return t2.compareTo(t1);
+            });
+            
+            if (!histories.isEmpty()) {
+                PriceHistory latest = histories.get(0);
+                long dateInMillis = (latest.getChanged_at() != null ? latest.getChanged_at() : 0) * 1000;
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                String dateString = sdf.format(new Date(dateInMillis));
+                
+                String info = "Giá nhập mới nhất: " + formatCurrencyText(latest.getNew_import_price().longValue()) + " đ — Ngày: " + dateString;
+                tvLastImportInfo.setText(info);
+                tvLastImportInfo.setVisibility(View.VISIBLE);
+            } else {
+                tvLastImportInfo.setVisibility(View.GONE);
             }
         });
     }
@@ -372,19 +458,51 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void saveProduct() {
+    private void handleSaveClick() {
+        String sImport = etImportPrice.getText().toString().trim();
+        double newImportPrice = sImport.isEmpty() ? 0 : Double.parseDouble(sImport.replace(".", ""));
+        
+        if (productId != null && currentProduct != null) {
+            double oldImportPrice = currentProduct.getImport_price() != null ? currentProduct.getImport_price() : 0;
+            if (newImportPrice != oldImportPrice) {
+                String comparison = newImportPrice > oldImportPrice ? "CAO HƠN" : "THẤP HƠN";
+                String message = String.format(Locale.getDefault(), 
+                    "⚠️ Giá nhập mới (%s đ) %s giá cũ (%s đ).\nBạn có muốn thay đổi không?",
+                    formatCurrencyText((long)newImportPrice),
+                    comparison,
+                    formatCurrencyText((long)oldImportPrice)
+                );
+                
+                new MaterialAlertDialogBuilder(this)
+                    .setTitle("Cảnh báo thay đổi giá nhập")
+                    .setMessage(message)
+                    .setPositiveButton("Đồng ý", (dialog, which) -> {
+                        saveProduct(newImportPrice);
+                    })
+                    .setNegativeButton("Bỏ qua", (dialog, which) -> {
+                        // Restore old price
+                        setCurrencyValue(etImportPrice, (long)oldImportPrice);
+                    })
+                    .show();
+                return;
+            }
+        }
+        
+        saveProduct(newImportPrice);
+    }
+
+    private void saveProduct(double importPrice) {
         String code = etProductCode.getText().toString().trim();
         String name = etProductName.getText().toString().trim();
-        String sImport = etImportPrice.getText().toString().trim();
         String sSell = etSellPrice.getText().toString().trim();
         String sStock = etStockQuantity.getText().toString().trim();
+        String note = etNote.getText().toString().trim();
 
         if (name.isEmpty()) {
             etProductName.setError("Vui lòng nhập tên");
             return;
         }
 
-        double importPrice = sImport.isEmpty() ? 0 : Double.parseDouble(sImport.replace(".", ""));
         double sellPrice = sSell.isEmpty() ? 0 : Double.parseDouble(sSell.replace(".", ""));
         int stockQuantity = sStock.isEmpty() ? 0 : Integer.parseInt(sStock);
         boolean isBundle = swIsBundle.isChecked();
@@ -395,6 +513,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         p.setImport_price(importPrice);
         p.setSell_price(sellPrice);
         p.setStock_quantity(stockQuantity);
+        p.setNote(note);
         p.setIs_bundle(isBundle);
         p.setImage_url(uploadedImageUrl);
 

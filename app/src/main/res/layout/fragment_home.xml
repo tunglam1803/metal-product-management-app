@@ -304,15 +304,21 @@
             android:focusable="true" />
     </LinearLayout>
 
-    <!-- 4. Product Recycler View -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvProducts"
+    <!-- 4. Product Recycler View Wrapped in SwipeRefreshLayout -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/llFilters"
-        android:clipToPadding="false"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="6dp" />
+        android:layout_below="@id/llFilters">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvProducts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- 5. Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
