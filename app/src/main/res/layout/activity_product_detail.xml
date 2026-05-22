@@ -433,6 +433,20 @@
             android:layout_marginBottom="12dp"
             android:visibility="gone" />
 
+        <!-- Generate QR Code Button (visible in view mode only) -->
+        <android.widget.Button
+            android:id="@+id/btnGenerateQR"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="📱 Tạo mã QR"
+            android:textColor="@color/colorPrimary"
+            android:background="@drawable/btn_outline_primary"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone" />
+
         <!-- Save Button (visible in edit mode only) -->
         <android.widget.Button
             android:id="@+id/btnSave"
