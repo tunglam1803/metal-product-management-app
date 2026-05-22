@@ -58,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -319,7 +320,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             if (!histories.isEmpty()) {
                 PriceHistory latest = histories.get(0);
                 long dateInMillis = (latest.getChanged_at() != null ? latest.getChanged_at() : 0) * 1000;
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                 String dateString = sdf.format(new Date(dateInMillis));
                 
                 String info = "Giá nhập mới nhất: " + formatCurrencyText(latest.getNew_import_price().longValue()) + " đ — Ngày: " + dateString;
@@ -650,8 +651,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         }
     }
-
-    // --- Currency formatting helpers ---
 
     private String formatCurrencyText(long amount) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());

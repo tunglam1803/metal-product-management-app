@@ -34,6 +34,7 @@ import com.example.myapplication.models.Category;
 import com.example.myapplication.models.Product;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -50,8 +51,8 @@ public class DashboardFragment extends Fragment {
     private final List<Product> allProducts = new ArrayList<>();
     
     private SwipeRefreshLayout swipeRefreshLayout;
-    private com.google.firebase.firestore.ListenerRegistration productsListener;
-    private com.google.firebase.firestore.ListenerRegistration categoriesListener;
+    private ListenerRegistration productsListener;
+    private ListenerRegistration categoriesListener;
 
     @Nullable
     @Override

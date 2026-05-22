@@ -56,11 +56,11 @@ import com.example.myapplication.models.Category;
 import com.example.myapplication.models.Product;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -84,7 +84,7 @@ public class HomeFragment extends Fragment {
     private ImageButton btnGridToggle;
     private View tabProducts, tabInventory, tabBundle;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private com.google.firebase.firestore.ListenerRegistration productsListener;
+    private ListenerRegistration productsListener;
 
     @Nullable
     @Override
