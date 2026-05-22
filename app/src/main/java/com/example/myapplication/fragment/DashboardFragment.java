@@ -34,6 +34,7 @@ import com.example.myapplication.models.Category;
 import com.example.myapplication.models.Product;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -50,8 +51,8 @@ public class DashboardFragment extends Fragment {
     private final List<Product> allProducts = new ArrayList<>();
     
     private SwipeRefreshLayout swipeRefreshLayout;
-    private com.google.firebase.firestore.ListenerRegistration productsListener;
-    private com.google.firebase.firestore.ListenerRegistration categoriesListener;
+    private ListenerRegistration productsListener;
+    private ListenerRegistration categoriesListener;
 
     @Nullable
     @Override
@@ -258,7 +259,7 @@ public class DashboardFragment extends Fragment {
                 btnEdit.setOnClickListener(v2 -> {
                     EditText etEdit = new EditText(context);
                     etEdit.setText(cat.getCategory_name());
-                    etEdit.setTextColor(textColorPrimary);
+                    etEdit.setTextColor(ContextCompat.getColor(context, R.color.colorTextDark));
                     etEdit.setHintTextColor(ContextCompat.getColor(context, R.color.text_hint));
                     etEdit.setSelection(etEdit.getText().length());
                     etEdit.setBackgroundResource(R.drawable.edit_text_background);

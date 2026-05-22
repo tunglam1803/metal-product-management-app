@@ -58,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -319,7 +320,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             if (!histories.isEmpty()) {
                 PriceHistory latest = histories.get(0);
                 long dateInMillis = (latest.getChanged_at() != null ? latest.getChanged_at() : 0) * 1000;
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                 String dateString = sdf.format(new Date(dateInMillis));
                 
                 String info = "Giá nhập mới nhất: " + formatCurrencyText(latest.getNew_import_price().longValue()) + " đ — Ngày: " + dateString;
@@ -461,40 +462,63 @@ public class ProductDetailActivity extends AppCompatActivity {
     private void handleSaveClick() {
         String sImport = etImportPrice.getText().toString().trim();
         double newImportPrice = sImport.isEmpty() ? 0 : Double.parseDouble(sImport.replace(".", ""));
-        
+
+        String sSell = etSellPrice.getText().toString().trim();
+        double newSellPrice = sSell.isEmpty() ? 0 : Double.parseDouble(sSell.replace(".", ""));
+
         if (productId != null && currentProduct != null) {
             double oldImportPrice = currentProduct.getImport_price() != null ? currentProduct.getImport_price() : 0;
-            if (newImportPrice != oldImportPrice) {
-                String comparison = newImportPrice > oldImportPrice ? "CAO HƠN" : "THẤP HƠN";
-                String message = String.format(Locale.getDefault(), 
-                    "⚠️ Giá nhập mới (%s đ) %s giá cũ (%s đ).\nBạn có muốn thay đổi không?",
-                    formatCurrencyText((long)newImportPrice),
-                    comparison,
-                    formatCurrencyText((long)oldImportPrice)
-                );
-                
+            double oldSellPrice = currentProduct.getSell_price() != null ? currentProduct.getSell_price() : 0;
+
+            boolean importChanged = newImportPrice != oldImportPrice;
+            boolean sellChanged = newSellPrice != oldSellPrice;
+
+            if (importChanged || sellChanged) {
+                StringBuilder messageBuilder = new StringBuilder();
+                if (importChanged) {
+                    String comparison = newImportPrice > oldImportPrice ? "CAO HƠN" : "THẤP HƠN";
+                    messageBuilder.append(String.format(Locale.getDefault(), 
+                        "• Giá nhập mới (%s đ) %s giá cũ (%s đ).\n",
+                        formatCurrencyText((long)newImportPrice),
+                        comparison,
+                        formatCurrencyText((long)oldImportPrice)
+                    ));
+                }
+
+                if (sellChanged) {
+                    String comparison = newSellPrice > oldSellPrice ? "CAO HƠN" : "THẤP HƠN";
+                    messageBuilder.append(String.format(Locale.getDefault(), 
+                        "• Giá bán mới (%s đ) %s giá cũ (%s đ).\n",
+                        formatCurrencyText((long)newSellPrice),
+                        comparison,
+                        formatCurrencyText((long)oldSellPrice)
+                    ));
+                }
+
+                messageBuilder.append("\nBạn có đồng ý lưu thay đổi này không?");
+
                 new MaterialAlertDialogBuilder(this)
-                    .setTitle("Cảnh báo thay đổi giá nhập")
-                    .setMessage(message)
+                    .setTitle("Cảnh báo thay đổi giá")
+                    .setMessage(messageBuilder.toString())
                     .setPositiveButton("Đồng ý", (dialog, which) -> {
-                        saveProduct(newImportPrice);
+                        saveProduct(newImportPrice, newSellPrice);
                     })
                     .setNegativeButton("Bỏ qua", (dialog, which) -> {
                         // Restore old price
-                        setCurrencyValue(etImportPrice, (long)oldImportPrice);
+                        if (importChanged) setCurrencyValue(etImportPrice, (long)oldImportPrice);
+                        if (sellChanged) setCurrencyValue(etSellPrice, (long)oldSellPrice);
                     })
                     .show();
                 return;
             }
         }
         
-        saveProduct(newImportPrice);
+        saveProduct(newImportPrice, newSellPrice);
     }
 
-    private void saveProduct(double importPrice) {
+    private void saveProduct(double importPrice, double sellPrice) {
         String code = etProductCode.getText().toString().trim();
         String name = etProductName.getText().toString().trim();
-        String sSell = etSellPrice.getText().toString().trim();
         String sStock = etStockQuantity.getText().toString().trim();
         String note = etNote.getText().toString().trim();
 
@@ -502,8 +526,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             etProductName.setError("Vui lòng nhập tên");
             return;
         }
-
-        double sellPrice = sSell.isEmpty() ? 0 : Double.parseDouble(sSell.replace(".", ""));
         int stockQuantity = sStock.isEmpty() ? 0 : Integer.parseInt(sStock);
         boolean isBundle = swIsBundle.isChecked();
 
@@ -629,8 +651,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         }
     }
-
-    // --- Currency formatting helpers ---
 
     private String formatCurrencyText(long amount) {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
