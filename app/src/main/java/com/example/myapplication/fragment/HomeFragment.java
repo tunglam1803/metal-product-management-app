@@ -40,6 +40,7 @@ import android.view.MotionEvent;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.app.Activity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
@@ -82,6 +83,8 @@ public class HomeFragment extends Fragment {
     private int currentTab = 0; // 0=Sản phẩm, 1=Tồn kho, 2=Bán kèm
     private ImageButton btnGridToggle;
     private View tabProducts, tabInventory, tabBundle;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private com.google.firebase.firestore.ListenerRegistration productsListener;
 
     @Nullable
     @Override
@@ -100,6 +103,14 @@ public class HomeFragment extends Fragment {
         ImageButton btnScan = view.findViewById(R.id.btnScan);
         ImageButton btnSort = view.findViewById(R.id.btnSort);
         btnGridToggle = view.findViewById(R.id.btnGridToggle);
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+
+        // Configure swipe refresh layout
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            loadProducts();
+            loadCategoriesAndPopulatePills();
+        });
 
         // Register Barcode Scanner Launcher
         barcodeScannerLauncher = registerForActivityResult(
@@ -397,6 +408,7 @@ public class HomeFragment extends Fragment {
 
     private void loadProducts() {
         firebaseHelper.listenForProducts((value, error) -> {
+            swipeRefreshLayout.setRefreshing(false);
             if (error != null) {
                 if (getContext() != null) {
                     Toast.makeText(getContext(), "Lỗi Firestore: " + error.getMessage(), Toast.LENGTH_LONG).show();

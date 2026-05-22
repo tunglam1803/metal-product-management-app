@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.myapplication.MainActivity;
 import com.example.myapplication.ProductDetailActivity;
@@ -47,6 +48,10 @@ public class DashboardFragment extends Fragment {
     private ProductAdapter adapter;
     private FirebaseHelper firebaseHelper;
     private final List<Product> allProducts = new ArrayList<>();
+    
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private com.google.firebase.firestore.ListenerRegistration productsListener;
+    private com.google.firebase.firestore.ListenerRegistration categoriesListener;
 
     @Nullable
     @Override
@@ -100,13 +105,26 @@ public class DashboardFragment extends Fragment {
         btnActionAddCategory.setOnClickListener(v -> showCategoryManagerDialog());
 
         // 5. Load Real-time Stats and List
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayoutDashboard);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+        swipeRefreshLayout.setOnRefreshListener(this::loadDashboardData);
+        
         loadDashboardData();
 
         return view;
     }
+    
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (productsListener != null) productsListener.remove();
+        if (categoriesListener != null) categoriesListener.remove();
+    }
 
     private void loadDashboardData() {
-        firebaseHelper.listenForProducts((value, error) -> {
+        if (productsListener != null) productsListener.remove();
+        productsListener = firebaseHelper.listenForProducts((value, error) -> {
+            swipeRefreshLayout.setRefreshing(false);
             if (error != null || value == null)
                 return;
 
@@ -132,7 +150,9 @@ public class DashboardFragment extends Fragment {
             adapter.setProducts(recent);
         });
 
-        firebaseHelper.listenForCategories((value, error) -> {
+        if (categoriesListener != null) categoriesListener.remove();
+        categoriesListener = firebaseHelper.listenForCategories((value, error) -> {
+            swipeRefreshLayout.setRefreshing(false);
             if (error != null || value == null)
                 return;
 

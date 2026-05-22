@@ -12,6 +12,7 @@ public class Product {
     private String category_id;
     private Integer stock_quantity;
     private Boolean is_bundle;
+    private String note;
 
     public Product() {
         // Default constructor required for calls to
@@ -104,5 +105,13 @@ public class Product {
 
     public void setIs_bundle(Boolean is_bundle) {
         this.is_bundle = is_bundle;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 }

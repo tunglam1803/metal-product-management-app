@@ -80,6 +80,15 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tvStockQuantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textColor="@color/colorTextGrey"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif" />
         </LinearLayout>
 
         <!-- Rounded Share Button on Right -->
