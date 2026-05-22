@@ -18,14 +18,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
 import com.example.myapplication.fragment.DashboardFragment;
 import com.example.myapplication.fragment.HomeFragment;
 import com.example.myapplication.fragment.MoreFragment;
 import com.example.myapplication.fragment.ReportsFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.myapplication.helpers.PreferencesHelper;
+import com.example.myapplication.helpers.FirebaseHelper;
+import com.example.myapplication.models.Product;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,8 +37,17 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivTabDashboard, ivTabHome, ivTabReports, ivTabMore;
     private TextView tvTabDashboard, tvTabHome, tvTabReports, tvTabMore;
 
+    private static final java.util.Map<String, Integer> notifiedProductStocks = new java.util.HashMap<>();
+    private com.google.firebase.firestore.ListenerRegistration productsListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        PreferencesHelper prefHelper = new PreferencesHelper(this);
+        if (prefHelper.isDarkMode()) {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO);
+        }
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -104,6 +116,22 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.fragment_container, new DashboardFragment())
                     .commit();
             updateTabStyles(R.id.tab_dashboard);
+        }
+        updateNotificationListenerState();
+    }
+
+    public void updateNotificationListenerState() {
+        PreferencesHelper prefHelper = new PreferencesHelper(this);
+        if (prefHelper.isNotificationsEnabled()) {
+            if (productsListener == null) {
+                startNotificationListener();
+            }
+        } else {
+            if (productsListener != null) {
+                productsListener.remove();
+                productsListener = null;
+            }
+            notifiedProductStocks.clear();
         }
     }
 
@@ -221,6 +249,72 @@ public class MainActivity extends AppCompatActivity {
         } else if (tabId == R.id.nav_home) {
             loadFragment(new HomeFragment());
             updateTabStyles(R.id.tab_home);
+        }
+    }
+
+    private void startNotificationListener() {
+        if (productsListener != null) {
+            productsListener.remove();
+        }
+
+        FirebaseHelper firebaseHelper = new FirebaseHelper();
+        productsListener = firebaseHelper.listenForProducts((value, error) -> {
+            if (error != null || value == null) {
+                return;
+            }
+
+            for (com.google.firebase.firestore.QueryDocumentSnapshot doc : value) {
+                Product p = doc.toObject(Product.class);
+                p.setId(doc.getId());
+
+                int stock = p.getStock_quantity();
+                if (stock <= 5) {
+                    if (!notifiedProductStocks.containsKey(p.getId()) || notifiedProductStocks.get(p.getId()) != stock) {
+                        sendLowStockPushNotification(p);
+                        notifiedProductStocks.put(p.getId(), stock);
+                    }
+                } else {
+                    notifiedProductStocks.remove(p.getId());
+                }
+            }
+        });
+    }
+
+    private void sendLowStockPushNotification(Product p) {
+        String channelId = "settings_notifications";
+        String channelName = "Thông báo hệ thống";
+
+        android.app.NotificationManager notificationManager = 
+            (android.app.NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                channelId, channelName, android.app.NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("Kênh thông báo quản trị hệ thống");
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        androidx.core.app.NotificationCompat.Builder builder = new androidx.core.app.NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(android.R.drawable.ic_popup_reminder)
+            .setContentTitle("Cảnh báo tồn kho thấp! ⚠️")
+            .setContentText("Sản phẩm '" + p.getProduct_name() + "' chỉ còn " + p.getStock_quantity() + " sản phẩm trong kho.")
+            .setStyle(new androidx.core.app.NotificationCompat.BigTextStyle()
+                .bigText("Sản phẩm '" + p.getProduct_name() + "' (SKU: " + (p.getProduct_code() != null ? p.getProduct_code() : "N/A") + ") hiện đang ở mức báo động với chỉ " + p.getStock_quantity() + " đơn vị tồn kho. Vui lòng nhập thêm hàng sớm!"))
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true);
+
+        if (notificationManager != null) {
+            notificationManager.notify(p.getId().hashCode(), builder.build());
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (productsListener != null) {
+            productsListener.remove();
         }
     }
 }
