@@ -2,7 +2,9 @@ package com.example.myapplication;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -51,11 +53,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -94,6 +101,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private final List<Category> categoriesList = new ArrayList<>();
     private ArrayAdapter<String> categoryAdapter;
     private ImageButton btnScanCode;
+    private Button btnGenerateQR;
     private ActivityResultLauncher<Intent> barcodeScannerLauncher;
     private boolean isEditMode = false;
 
@@ -154,6 +162,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
         btnViewHistory.setOnClickListener(v -> showPriceHistory());
         imgPreview.setOnClickListener(v -> showFullScreenImage());
+        btnGenerateQR.setOnClickListener(v -> showQrCodeDialog());
 
         // Setup currency formatting for price fields
         setupCurrencyFormatting(etImportPrice);
@@ -195,6 +204,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvUploadStatus = findViewById(R.id.tvUploadStatus);
         spCategory = findViewById(R.id.spCategory);
         btnScanCode = findViewById(R.id.btnScanCode);
+        btnGenerateQR = findViewById(R.id.btnGenerateQR);
     }
     
     private void setEditMode(boolean edit) {
@@ -219,6 +229,10 @@ public class ProductDetailActivity extends AppCompatActivity {
         
         btnPickImage.setVisibility(edit ? View.VISIBLE : View.GONE);
         btnScanCode.setVisibility(edit ? View.VISIBLE : View.GONE);
+        
+        // Show QR button only in view mode when product has a code
+        String currentCode = etProductCode.getText().toString().trim();
+        btnGenerateQR.setVisibility(!edit && productId != null && !currentCode.isEmpty() ? View.VISIBLE : View.GONE);
         
         if (productId != null) {
             btnEdit.setVisibility(edit ? View.GONE : View.VISIBLE);
@@ -293,6 +307,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
                     tvUploadStatus.setText("Hình ảnh sản phẩm");
                 }
+                setEditMode(isEditMode);
             }
         });
     }
@@ -526,6 +541,13 @@ public class ProductDetailActivity extends AppCompatActivity {
             etProductName.setError("Vui lòng nhập tên");
             return;
         }
+        
+        // Auto-generate product code if empty
+        if (code.isEmpty()) {
+            code = "KK-" + String.format(Locale.getDefault(), "%05d", (int)(System.currentTimeMillis() % 100000));
+            etProductCode.setText(code);
+        }
+        
         int stockQuantity = sStock.isEmpty() ? 0 : Integer.parseInt(sStock);
         boolean isBundle = swIsBundle.isChecked();
 
@@ -697,5 +719,80 @@ public class ProductDetailActivity extends AppCompatActivity {
                 editText.addTextChangedListener(this);
             }
         });
+    }
+
+    private void showQrCodeDialog() {
+        String code = etProductCode.getText().toString().trim();
+        if (code.isEmpty()) {
+            Toast.makeText(this, "Sản phẩm chưa có mã!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            MultiFormatWriter writer = new MultiFormatWriter();
+            BitMatrix bitMatrix = writer.encode(code, BarcodeFormat.QR_CODE, 600, 600);
+            BarcodeEncoder encoder = new BarcodeEncoder();
+            Bitmap qrBitmap = encoder.createBitmap(bitMatrix);
+
+            // Build dialog
+            Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.dialog_qr_code);
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+            ImageView imgQr = dialog.findViewById(R.id.imgQrCode);
+            TextView tvProductName = dialog.findViewById(R.id.tvQrProductName);
+            TextView tvProductCode = dialog.findViewById(R.id.tvQrProductCode);
+            Button btnSaveQr = dialog.findViewById(R.id.btnSaveQr);
+            Button btnShareQr = dialog.findViewById(R.id.btnShareQr);
+            View btnCloseQr = dialog.findViewById(R.id.btnCloseQr);
+
+            imgQr.setImageBitmap(qrBitmap);
+            tvProductName.setText(etProductName.getText().toString().trim());
+            tvProductCode.setText("Mã: " + code);
+
+            btnCloseQr.setOnClickListener(v -> dialog.dismiss());
+
+            btnSaveQr.setOnClickListener(v -> {
+                saveQrToGallery(qrBitmap, code);
+                Toast.makeText(this, "Đã lưu mã QR vào thư viện ảnh! 📸", Toast.LENGTH_SHORT).show();
+            });
+
+            btnShareQr.setOnClickListener(v -> {
+                try {
+                    String path = MediaStore.Images.Media.insertImage(
+                            getContentResolver(), qrBitmap, "QR_" + code, "QR Code cho " + etProductName.getText());
+                    if (path != null) {
+                        Uri uri = Uri.parse(path);
+                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                        shareIntent.setType("image/*");
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                        shareIntent.putExtra(Intent.EXTRA_TEXT, "Mã QR sản phẩm: " + etProductName.getText() + " (" + code + ")");
+                        startActivity(Intent.createChooser(shareIntent, "Chia sẻ mã QR"));
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(this, "Lỗi chia sẻ: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            dialog.show();
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi tạo mã QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveQrToGallery(Bitmap bitmap, String code) {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, "QR_" + code + "_" + System.currentTimeMillis() + ".png");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/QR_KimKhi");
+
+        Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        if (uri != null) {
+            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            } catch (IOException e) {
+                Toast.makeText(this, "Lỗi lưu ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

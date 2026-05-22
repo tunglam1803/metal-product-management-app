@@ -107,17 +107,47 @@
             android:fontFamily="sans-serif" />
     </LinearLayout>
 
-    <!-- Login Button -->
-    <android.widget.Button
-        android:id="@+id/btnLogin"
+    <!-- Login Button Row -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:text="Đăng Nhập"
-        android:textColor="@android:color/white"
-        android:background="@drawable/btn_primary"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:fontFamily="sans-serif-medium"
-        android:layout_marginBottom="12dp" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <!-- Login Button -->
+        <android.widget.Button
+            android:id="@+id/btnLogin"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="52dp"
+            android:text="Đăng Nhập"
+            android:textColor="@android:color/white"
+            android:background="@drawable/btn_primary"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium" />
+
+        <!-- Biometric Login Button (initially hidden) -->
+        <FrameLayout
+            android:id="@+id/btnBiometricLogin"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/bg_icon_circle_purple"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Đăng nhập sinh trắc học">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_fingerprint"
+                app:tint="@color/colorPrimary"
+                xmlns:app="http://schemas.android.com/apk/res-auto" />
+        </FrameLayout>
+    </LinearLayout>
 
 </LinearLayout>
