@@ -461,40 +461,63 @@ public class ProductDetailActivity extends AppCompatActivity {
     private void handleSaveClick() {
         String sImport = etImportPrice.getText().toString().trim();
         double newImportPrice = sImport.isEmpty() ? 0 : Double.parseDouble(sImport.replace(".", ""));
-        
+
+        String sSell = etSellPrice.getText().toString().trim();
+        double newSellPrice = sSell.isEmpty() ? 0 : Double.parseDouble(sSell.replace(".", ""));
+
         if (productId != null && currentProduct != null) {
             double oldImportPrice = currentProduct.getImport_price() != null ? currentProduct.getImport_price() : 0;
-            if (newImportPrice != oldImportPrice) {
-                String comparison = newImportPrice > oldImportPrice ? "CAO HƠN" : "THẤP HƠN";
-                String message = String.format(Locale.getDefault(), 
-                    "⚠️ Giá nhập mới (%s đ) %s giá cũ (%s đ).\nBạn có muốn thay đổi không?",
-                    formatCurrencyText((long)newImportPrice),
-                    comparison,
-                    formatCurrencyText((long)oldImportPrice)
-                );
-                
+            double oldSellPrice = currentProduct.getSell_price() != null ? currentProduct.getSell_price() : 0;
+
+            boolean importChanged = newImportPrice != oldImportPrice;
+            boolean sellChanged = newSellPrice != oldSellPrice;
+
+            if (importChanged || sellChanged) {
+                StringBuilder messageBuilder = new StringBuilder();
+                if (importChanged) {
+                    String comparison = newImportPrice > oldImportPrice ? "CAO HƠN" : "THẤP HƠN";
+                    messageBuilder.append(String.format(Locale.getDefault(), 
+                        "• Giá nhập mới (%s đ) %s giá cũ (%s đ).\n",
+                        formatCurrencyText((long)newImportPrice),
+                        comparison,
+                        formatCurrencyText((long)oldImportPrice)
+                    ));
+                }
+
+                if (sellChanged) {
+                    String comparison = newSellPrice > oldSellPrice ? "CAO HƠN" : "THẤP HƠN";
+                    messageBuilder.append(String.format(Locale.getDefault(), 
+                        "• Giá bán mới (%s đ) %s giá cũ (%s đ).\n",
+                        formatCurrencyText((long)newSellPrice),
+                        comparison,
+                        formatCurrencyText((long)oldSellPrice)
+                    ));
+                }
+
+                messageBuilder.append("\nBạn có đồng ý lưu thay đổi này không?");
+
                 new MaterialAlertDialogBuilder(this)
-                    .setTitle("Cảnh báo thay đổi giá nhập")
-                    .setMessage(message)
+                    .setTitle("Cảnh báo thay đổi giá")
+                    .setMessage(messageBuilder.toString())
                     .setPositiveButton("Đồng ý", (dialog, which) -> {
-                        saveProduct(newImportPrice);
+                        saveProduct(newImportPrice, newSellPrice);
                     })
                     .setNegativeButton("Bỏ qua", (dialog, which) -> {
                         // Restore old price
-                        setCurrencyValue(etImportPrice, (long)oldImportPrice);
+                        if (importChanged) setCurrencyValue(etImportPrice, (long)oldImportPrice);
+                        if (sellChanged) setCurrencyValue(etSellPrice, (long)oldSellPrice);
                     })
                     .show();
                 return;
             }
         }
         
-        saveProduct(newImportPrice);
+        saveProduct(newImportPrice, newSellPrice);
     }
 
-    private void saveProduct(double importPrice) {
+    private void saveProduct(double importPrice, double sellPrice) {
         String code = etProductCode.getText().toString().trim();
         String name = etProductName.getText().toString().trim();
-        String sSell = etSellPrice.getText().toString().trim();
         String sStock = etStockQuantity.getText().toString().trim();
         String note = etNote.getText().toString().trim();
 
@@ -502,8 +525,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             etProductName.setError("Vui lòng nhập tên");
             return;
         }
-
-        double sellPrice = sSell.isEmpty() ? 0 : Double.parseDouble(sSell.replace(".", ""));
         int stockQuantity = sStock.isEmpty() ? 0 : Integer.parseInt(sStock);
         boolean isBundle = swIsBundle.isChecked();
 
