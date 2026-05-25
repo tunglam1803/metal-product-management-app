@@ -2,9 +2,9 @@ name: Android CI/CD - Build Release APK
 
 on:
   push:
-    branches: [ "main", "master", "develop" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
   workflow_dispatch: # Cho phép kích hoạt build thủ công từ giao diện GitHub Actions
 
 jobs:
