@@ -568,29 +568,56 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         btnSave.setEnabled(false);
         if (productId == null) {
-            firebaseHelper.addProduct(p, () -> {
-                Toast.makeText(this, "Thêm thành công!", Toast.LENGTH_SHORT).show();
-                finish();
-            }, error -> {
-                btnSave.setEnabled(true);
-                Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+            firebaseHelper.checkProductCodeExists(code, queryDocumentSnapshots -> {
+                boolean exists = queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty();
+                if (exists) {
+                    btnSave.setEnabled(true);
+                    etProductCode.setError("Mã SKU này đã tồn tại!");
+                    Toast.makeText(this, "Lỗi: Mã SKU đã được sử dụng bởi sản phẩm khác!", Toast.LENGTH_SHORT).show();
+                } else {
+                    firebaseHelper.addProduct(p, () -> {
+                        Toast.makeText(this, "Thêm thành công!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }, error -> {
+                        btnSave.setEnabled(true);
+                        Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+                    });
+                }
             });
         } else {
-            PriceHistory change = null;
-            if (currentProduct != null && (currentProduct.getImport_price() != importPrice
-                    || currentProduct.getSell_price() != sellPrice)) {
-                change = new PriceHistory(
-                        currentProduct.getImport_price(), importPrice,
-                        currentProduct.getSell_price(), sellPrice,
-                        System.currentTimeMillis() / 1000L,
-                        "Cập nhật thông tin");
-            }
-            firebaseHelper.updateProduct(productId, p, change, () -> {
-                Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                finish();
-            }, error -> {
-                btnSave.setEnabled(true);
-                Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+            firebaseHelper.checkProductCodeExists(code, queryDocumentSnapshots -> {
+                boolean isDuplicate = false;
+                if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        if (!doc.getId().equals(productId)) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isDuplicate) {
+                    btnSave.setEnabled(true);
+                    etProductCode.setError("Mã SKU này đã tồn tại!");
+                    Toast.makeText(this, "Lỗi: Mã SKU đã được sử dụng bởi sản phẩm khác!", Toast.LENGTH_SHORT).show();
+                } else {
+                    PriceHistory change = null;
+                    if (currentProduct != null && (currentProduct.getImport_price() != importPrice
+                            || currentProduct.getSell_price() != sellPrice)) {
+                        change = new PriceHistory(
+                                currentProduct.getImport_price(), importPrice,
+                                currentProduct.getSell_price(), sellPrice,
+                                System.currentTimeMillis() / 1000L,
+                                "Cập nhật thông tin");
+                    }
+                    firebaseHelper.updateProduct(productId, p, change, () -> {
+                        Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }, error -> {
+                        btnSave.setEnabled(true);
+                        Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+                    });
+                }
             });
         }
     }

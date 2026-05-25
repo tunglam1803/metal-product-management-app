@@ -39,6 +39,19 @@ public class FirebaseHelper {
         db.collection("products").document(id).get().addOnSuccessListener(successListener);
     }
 
+    public void checkProductCodeExists(String productCode,
+            com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot> successListener) {
+        String userId = getCurrentUserId();
+        if (userId == null)
+            return;
+        db.collection("products")
+                .whereEqualTo("user_id", userId)
+                .whereEqualTo("product_code", productCode)
+                .get()
+                .addOnSuccessListener(successListener);
+    }
+
+
     public void addProduct(Product product, OnSuccessListener successListener, OnFailureListener failureListener) {
         String userId = getCurrentUserId();
         if (userId == null) {
