@@ -113,9 +113,9 @@ public class MainActivity extends AppCompatActivity {
         // Load default fragment
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new DashboardFragment())
+                    .replace(R.id.fragment_container, new HomeFragment())
                     .commit();
-            updateTabStyles(R.id.tab_dashboard);
+            updateTabStyles(R.id.tab_home);
         }
         updateNotificationListenerState();
     }
