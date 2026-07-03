@@ -22,6 +22,7 @@
         android:theme="@style/Theme.MyApplication">
         <activity
             android:name=".LoginActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,10 +32,12 @@
 
         <activity
             android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         
         <activity
             android:name=".ProductDetailActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
 
         <activity

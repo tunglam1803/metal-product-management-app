@@ -150,19 +150,33 @@ public class ProductDetailActivity extends AppCompatActivity {
                 });
 
         btnScanCode.setOnClickListener(v -> {
+            hideKeyboard();
             Intent intent = new Intent(this, ScannerActivity.class);
             barcodeScannerLauncher.launch(intent);
         });
 
-        btnSave.setOnClickListener(v -> handleSaveClick());
+        btnSave.setOnClickListener(v -> {
+            hideKeyboard();
+            handleSaveClick();
+        });
         btnEdit.setOnClickListener(v -> {
+            hideKeyboard();
             isEditMode = true;
             setEditMode(true);
             toolbar.setTitle("Sửa Sản Phẩm");
         });
-        btnViewHistory.setOnClickListener(v -> showPriceHistory());
-        imgPreview.setOnClickListener(v -> showFullScreenImage());
-        btnGenerateQR.setOnClickListener(v -> showQrCodeDialog());
+        btnViewHistory.setOnClickListener(v -> {
+            hideKeyboard();
+            showPriceHistory();
+        });
+        imgPreview.setOnClickListener(v -> {
+            hideKeyboard();
+            showFullScreenImage();
+        });
+        btnGenerateQR.setOnClickListener(v -> {
+            hideKeyboard();
+            showQrCodeDialog();
+        });
 
         // Setup currency formatting for price fields
         setupCurrencyFormatting(etImportPrice);
@@ -205,6 +219,30 @@ public class ProductDetailActivity extends AppCompatActivity {
         spCategory = findViewById(R.id.spCategory);
         btnScanCode = findViewById(R.id.btnScanCode);
         btnGenerateQR = findViewById(R.id.btnGenerateQR);
+
+        final View scrollView = findViewById(R.id.scrollView);
+        if (scrollView instanceof android.widget.ScrollView) {
+            final android.widget.ScrollView sv = (android.widget.ScrollView) scrollView;
+            sv.setOnTouchListener((v, event) -> {
+                hideKeyboard();
+                return false;
+            });
+            View.OnFocusChangeListener autoScrollFocusListener = (v, hasFocus) -> {
+                if (hasFocus) {
+                    sv.postDelayed(() -> {
+                        int[] location = new int[2];
+                        v.getLocationOnScreen(location);
+                        sv.smoothScrollBy(0, location[1] - 300);
+                    }, 250);
+                }
+            };
+            etProductCode.setOnFocusChangeListener(autoScrollFocusListener);
+            etProductName.setOnFocusChangeListener(autoScrollFocusListener);
+            etImportPrice.setOnFocusChangeListener(autoScrollFocusListener);
+            etSellPrice.setOnFocusChangeListener(autoScrollFocusListener);
+            etStockQuantity.setOnFocusChangeListener(autoScrollFocusListener);
+            etNote.setOnFocusChangeListener(autoScrollFocusListener);
+        }
     }
     
     private void setEditMode(boolean edit) {
@@ -819,6 +857,16 @@ public class ProductDetailActivity extends AppCompatActivity {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             } catch (IOException e) {
                 Toast.makeText(this, "Lỗi lưu ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void hideKeyboard() {
+        View view = getCurrentFocus();
+        if (view != null) {
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         }
     }
