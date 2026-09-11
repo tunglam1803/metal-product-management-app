@@ -39,8 +39,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.load.model.GlideUrl;
-import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.myapplication.adapters.PriceHistoryAdapter;
@@ -303,17 +301,8 @@ public class ProductDetailActivity extends AppCompatActivity {
                 if (uploadedImageUrl != null && !uploadedImageUrl.isEmpty()) {
                     imgPreview.setImageTintList(null);
 
-                    if (uploadedImageUrl.contains("/object/public/")) {
-                        uploadedImageUrl = uploadedImageUrl.replace("/object/public/", "/object/");
-                    }
-
-                    GlideUrl glideUrl = new GlideUrl(
-                            uploadedImageUrl,
-                            new LazyHeaders.Builder()
-                                    .addHeader("Authorization", "Bearer " + BuildConfig.SUPABASE_ANON_KEY)
-                                    .build());
-
-                    Glide.with(this).load(glideUrl)
+                    Glide.with(this)
+                            .load(uploadedImageUrl)
                             .centerCrop()
                             .listener(
                                     new RequestListener<Drawable>() {

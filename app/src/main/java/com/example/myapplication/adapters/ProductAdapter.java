@@ -14,9 +14,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.model.GlideUrl;
-import com.bumptech.glide.load.model.LazyHeaders;
-import com.example.myapplication.BuildConfig;
 import com.example.myapplication.R;
 import com.example.myapplication.models.Category;
 import com.example.myapplication.models.Product;
@@ -116,19 +113,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         // Load image using Glide
         if (product.getImage_url() != null && !product.getImage_url().isEmpty()) {
             holder.imgProduct.setImageTintList(null);
-            
-            String finalUrl = product.getImage_url();
-            if (finalUrl.contains("/object/public/")) {
-                finalUrl = finalUrl.replace("/object/public/", "/object/");
-            }
-
-            GlideUrl glideUrl = new GlideUrl(finalUrl,
-                new LazyHeaders.Builder()
-                    .addHeader("Authorization", "Bearer " + BuildConfig.SUPABASE_ANON_KEY)
-                    .build());
-            
             Glide.with(context)
-                    .load(glideUrl)
+                    .load(product.getImage_url())
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .into(holder.imgProduct);
         } else {
