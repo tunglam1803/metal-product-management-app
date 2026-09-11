@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
             barcodeScannerLauncher.launch(intent);
         });
 
-        // Load default fragment
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new HomeFragment())
