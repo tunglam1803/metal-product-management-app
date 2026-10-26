@@ -1,205 +1,486 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="20dp"
-    android:background="@drawable/bg_search_round"
-    android:backgroundTint="@color/card_bg">
+    android:fillViewport="true"
+    android:scrollbars="vertical">
 
-    <TextView
-        android:id="@+id/tvPickerTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Thêm mặt hàng &amp; Giá riêng"
-        android:textColor="@color/colorTextDark"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:fontFamily="sans-serif-medium" />
-
-    <TextView
-        android:id="@+id/tvPickerSubtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Lưu giá bán lần đầu để các lần sau khớp giá chính xác"
-        android:textColor="@color/colorTextGrey"
-        android:textSize="12sp"
-        android:fontFamily="sans-serif" />
-
-    <!-- Product Selection Section -->
     <LinearLayout
-        android:id="@+id/llSelectProductSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="16dp">
+        android:padding="20dp"
+        android:background="@drawable/bg_search_round"
+        android:backgroundTint="@color/card_bg">
 
         <TextView
+            android:id="@+id/tvPickerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chọn sản phẩm từ kho *"
+            android:text="Thêm mặt hàng &amp; Giá riêng"
             android:textColor="@color/colorTextDark"
-            android:textSize="13sp"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:fontFamily="sans-serif-medium" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvPickerSubtitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="6dp">
+            android:layout_marginTop="4dp"
+            android:text="Lưu giá bán lần đầu để các lần sau khớp giá chính xác"
+            android:textColor="@color/colorTextGrey"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif" />
 
-            <Spinner
-                android:id="@+id/spProductPicker"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="@drawable/edit_text_background"
-                android:paddingHorizontal="12dp" />
-
-            <ImageButton
-                android:id="@+id/btnScanBarcodePicker"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_share_btn"
-                android:src="@drawable/ic_scan_qr"
-                app:tint="@color/colorPrimary"
-                android:contentDescription="Quét mã vạch" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Selected Product Summary Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardSelectedProduct"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="@color/divider"
-        app:cardBackgroundColor="@color/cardAccentPurple">
-
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- 1. SEARCH & PICK SECTION (Add Mode)             -->
+        <!-- ═══════════════════════════════════════════════ -->
         <LinearLayout
+            android:id="@+id/llSearchAndPickSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:layout_marginTop="16dp">
 
             <TextView
-                android:id="@+id/tvPickedProductName"
+                android:id="@+id/tvPickerSearchLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tên sản phẩm"
+                android:text="Tìm sản phẩm trong kho *"
                 android:textColor="@color/colorTextDark"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:fontFamily="sans-serif-medium" />
 
+            <!-- Search input bar -->
+            <LinearLayout
+                android:id="@+id/llSearchBarContainer"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/edit_text_background"
+                android:paddingHorizontal="12dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    app:tint="@color/text_hint" />
+
+                <EditText
+                    android:id="@+id/etPickerSearch"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:background="@null"
+                    android:hint="Gõ mã hoặc tên sản phẩm để tìm..."
+                    android:textColor="@color/colorTextDark"
+                    android:textColorHint="@color/text_hint"
+                    android:textSize="14sp"
+                    android:inputType="text" />
+
+                <ImageButton
+                    android:id="@+id/btnClearPickerSearch"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    app:tint="@color/text_hint"
+                    android:visibility="gone"
+                    android:contentDescription="Xóa tìm kiếm" />
+
+                <ImageButton
+                    android:id="@+id/btnScanBarcodePicker"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_scan_qr"
+                    app:tint="@color/colorPrimary"
+                    android:contentDescription="Quét mã vạch" />
+            </LinearLayout>
+
+            <!-- Search Results Dropdown List (RecyclerView) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPickerSearchResults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:scrollbars="vertical"
+                android:fadeScrollbars="false"
+                android:nestedScrollingEnabled="true"
+                android:visibility="gone" />
+
+            <!-- "NOT FOUND / ADD NEW PRODUCT" ACTION BUTTON -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardNotFoundAction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/colorPrimary"
+                app:cardBackgroundColor="@color/cardAccentPurple"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <FrameLayout
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_icon_circle_purple">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@android:drawable/ic_input_add"
+                            app:tint="@color/colorPrimary"
+                            android:layout_gravity="center" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="10dp">
+
+                        <TextView
+                            android:id="@+id/tvNotFoundActionTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="+ Thêm mới sản phẩm vào kho"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/tvNotFoundActionSubtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chưa có trong kho? Bấm để tạo mới và lưu giá luôn"
+                            android:textColor="@color/colorTextGrey"
+                            android:textSize="11sp"
+                            android:fontFamily="sans-serif" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- SELECTED PRODUCT CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSelectedProduct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/colorPrimary"
+                app:cardBackgroundColor="@color/cardAccentPurple"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0.5dp"
+                        app:strokeColor="@color/divider"
+                        app:cardBackgroundColor="@color/colorSurfaceVariant">
+
+                        <ImageView
+                            android:id="@+id/ivPickedProductImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@android:drawable/ic_menu_gallery"
+                            android:contentDescription="Ảnh sản phẩm" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="8dp">
+
+                        <TextView
+                            android:id="@+id/tvPickedProductName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tên sản phẩm"
+                            android:textColor="@color/colorTextDark"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:maxLines="2"
+                            android:ellipsize="end"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="2dp">
+
+                            <TextView
+                                android:id="@+id/tvPickedProductCode"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Mã: SP-001"
+                                android:textColor="@color/colorPrimary"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif" />
+
+                            <TextView
+                                android:id="@+id/tvPickedStandardPrice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="• Giá: 100.000 đ"
+                                android:textColor="@color/colorTextGrey"
+                                android:textSize="12sp"
+                                android:fontFamily="sans-serif" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/btnChangeSelectedProduct"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Đổi"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_share_btn"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="6dp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- 2. CREATE NEW PRODUCT INLINE SECTION            -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <LinearLayout
+            android:id="@+id/llCreateNewProductSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+
+            <!-- Banner indicating new product creation -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="4dp">
+                android:background="@drawable/bg_pill_price"
+                android:backgroundTint="@color/cardAccentGreen"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@android:drawable/ic_input_add"
+                    app:tint="@color/colorSuccess" />
 
                 <TextView
-                    android:id="@+id/tvPickedProductCode"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Mã: SP-001"
-                    android:textColor="@color/colorPrimary"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Tạo sản phẩm mới vào kho"
+                    android:textColor="@color/colorSuccess"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:fontFamily="sans-serif" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:layout_weight="1" />
+                    android:fontFamily="sans-serif-medium" />
 
                 <TextView
-                    android:id="@+id/tvPickedStandardPrice"
+                    android:id="@+id/btnCancelCreateNewMode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Giá niêm yết: 100.000 đ"
+                    android:text="Quay lại tìm kiếm"
                     android:textColor="@color/colorTextGrey"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:fontFamily="sans-serif" />
             </LinearLayout>
+
+            <!-- New Product Name -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Tên sản phẩm mới *"
+                app:boxStrokeColor="@color/colorPrimary"
+                app:hintTextColor="@color/colorPrimary"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etNewProductName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:textColor="@color/colorTextDark"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- New Product Code + Scan button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="10dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Mã sản phẩm (SKU)"
+                    app:boxStrokeColor="@color/colorPrimary"
+                    app:hintTextColor="@color/colorPrimary"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNewProductCode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapCharacters"
+                        android:textColor="@color/colorTextDark"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <ImageButton
+                    android:id="@+id/btnScanNewProductCode"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_share_btn"
+                    android:src="@drawable/ic_scan_qr"
+                    app:tint="@color/colorPrimary"
+                    android:contentDescription="Quét mã vạch" />
+            </LinearLayout>
+
+            <!-- New Product Standard Price in Inventory -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:hint="Giá bán niêm yết trong kho (VNĐ)"
+                app:boxStrokeColor="@color/colorPrimary"
+                app:hintTextColor="@color/colorPrimary"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etNewProductStandardPrice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:digits="0123456789."
+                    android:textColor="@color/colorTextDark"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
-    <!-- Custom Price Input -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Giá bán riêng cho công ty này (VNĐ) *"
-        app:boxStrokeColor="@color/colorPriceOrange"
-        app:hintTextColor="@color/colorPriceOrange"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etCustomPriceInput"
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- 3. CUSTOM PRICING FOR THIS COMPANY              -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilCustomPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:textColor="@color/colorPriceOrange"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="16dp"
+            android:hint="Giá bán riêng cho công ty này (VNĐ) *"
+            app:boxStrokeColor="@color/colorPriceOrange"
+            app:hintTextColor="@color/colorPriceOrange"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-    <!-- Product Note Input -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:hint="Ghi chú (quy cách, số lượng thường lấy, chiết khấu...)"
-        app:boxStrokeColor="@color/colorPrimary"
-        app:hintTextColor="@color/colorPrimary"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCustomPriceInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:digits="0123456789."
+                android:textColor="@color/colorPriceOrange"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etProductNoteInput"
+        <!-- Product Note Input -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:minLines="2"
-            android:textColor="@color/colorTextDark"
-            android:textSize="14sp" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="12dp"
+            android:hint="Ghi chú (quy cách, số lượng thường lấy, chiết khấu...)"
+            app:boxStrokeColor="@color/colorPrimary"
+            app:hintTextColor="@color/colorPrimary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-    <!-- Action Buttons -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="20dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etProductNoteInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="2"
+                android:textColor="@color/colorTextDark"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/btnCancelPicker"
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:text="Hủy"
-            android:textColor="@color/colorTextGrey"
-            android:background="@drawable/btn_cancel"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_marginEnd="8dp" />
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- 4. ACTION BUTTONS                               -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="20dp">
 
-        <Button
-            android:id="@+id/btnSaveCustomPrice"
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:text="Lưu giá riêng"
-            android:textColor="#FFFFFF"
-            android:background="@drawable/btn_primary"
-            android:paddingHorizontal="20dp"
-            android:textStyle="bold" />
+            <Button
+                android:id="@+id/btnCancelPicker"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:text="Hủy"
+                android:textColor="@color/colorTextGrey"
+                android:background="@drawable/btn_cancel"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnSaveCustomPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:text="Lưu giá riêng"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/btn_primary"
+                android:paddingHorizontal="20dp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

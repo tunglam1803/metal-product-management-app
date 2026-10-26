@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -14,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -26,7 +28,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.bumptech.glide.Glide;
 import com.example.myapplication.adapters.CompanyProductAdapter;
+import com.example.myapplication.adapters.ProductPickerAdapter;
 import com.example.myapplication.helpers.FirebaseHelper;
 import com.example.myapplication.models.Company;
 import com.example.myapplication.models.CompanyProduct;
@@ -46,6 +50,10 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class CompanyDetailActivity extends AppCompatActivity {
+
+    private interface OnBarcodeScannedListener {
+        void onScanned(String barcode);
+    }
 
     private String companyId;
     private String companyName;
@@ -75,7 +83,7 @@ public class CompanyDetailActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> barcodeScannerLauncher;
     private ActivityResultLauncher<Intent> dialogBarcodeScannerLauncher;
     private Dialog activePickerDialog;
-    private Spinner activeProductSpinner;
+    private OnBarcodeScannedListener activeDialogBarcodeListener;
 
     private final DecimalFormat currencyFormat;
 
@@ -132,21 +140,8 @@ public class CompanyDetailActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         String barcode = result.getData().getStringExtra("SCANNED_BARCODE");
-                        if (barcode != null && !barcode.isEmpty() && activeProductSpinner != null) {
-                            int matchedIndex = -1;
-                            for (int i = 0; i < inventoryProducts.size(); i++) {
-                                Product p = inventoryProducts.get(i);
-                                if (barcode.equalsIgnoreCase(p.getProduct_code())) {
-                                    matchedIndex = i;
-                                    break;
-                                }
-                            }
-                            if (matchedIndex != -1) {
-                                activeProductSpinner.setSelection(matchedIndex);
-                                Toast.makeText(this, "Đã khớp sản phẩm: " + barcode, Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(this, "Không tìm thấy sản phẩm có mã " + barcode + " trong kho", Toast.LENGTH_LONG).show();
-                            }
+                        if (barcode != null && !barcode.trim().isEmpty() && activeDialogBarcodeListener != null) {
+                            activeDialogBarcodeListener.onScanned(barcode.trim());
                         }
                     }
                 });
@@ -372,85 +367,317 @@ public class CompanyDetailActivity extends AppCompatActivity {
         }
 
         TextView tvTitle = dialog.findViewById(R.id.tvPickerTitle);
-        LinearLayout llSelectSection = dialog.findViewById(R.id.llSelectProductSection);
-        Spinner spProductPicker = dialog.findViewById(R.id.spProductPicker);
-        activeProductSpinner = spProductPicker;
-        ImageButton btnScan = dialog.findViewById(R.id.btnScanBarcodePicker);
+        TextView tvSubtitle = dialog.findViewById(R.id.tvPickerSubtitle);
 
-        TextView tvPickedName = dialog.findViewById(R.id.tvPickedProductName);
-        TextView tvPickedCode = dialog.findViewById(R.id.tvPickedProductCode);
+        LinearLayout llSearchAndPickSection = dialog.findViewById(R.id.llSearchAndPickSection);
+        TextView tvPickerSearchLabel = dialog.findViewById(R.id.tvPickerSearchLabel);
+        LinearLayout llSearchBarContainer = dialog.findViewById(R.id.llSearchBarContainer);
+        EditText etPickerSearch = dialog.findViewById(R.id.etPickerSearch);
+        ImageButton btnClearPickerSearch = dialog.findViewById(R.id.btnClearPickerSearch);
+        ImageButton btnScanBarcodePicker = dialog.findViewById(R.id.btnScanBarcodePicker);
+        RecyclerView rvPickerSearchResults = dialog.findViewById(R.id.rvPickerSearchResults);
+
+        View cardNotFoundAction = dialog.findViewById(R.id.cardNotFoundAction);
+        TextView tvNotFoundActionTitle = dialog.findViewById(R.id.tvNotFoundActionTitle);
+        TextView tvNotFoundActionSubtitle = dialog.findViewById(R.id.tvNotFoundActionSubtitle);
+
+        View cardSelectedProduct = dialog.findViewById(R.id.cardSelectedProduct);
+        ImageView ivPickedProductImage = dialog.findViewById(R.id.ivPickedProductImage);
+        TextView tvPickedProductName = dialog.findViewById(R.id.tvPickedProductName);
+        TextView tvPickedProductCode = dialog.findViewById(R.id.tvPickedProductCode);
         TextView tvPickedStandardPrice = dialog.findViewById(R.id.tvPickedStandardPrice);
+        TextView btnChangeSelectedProduct = dialog.findViewById(R.id.btnChangeSelectedProduct);
+
+        LinearLayout llCreateNewProductSection = dialog.findViewById(R.id.llCreateNewProductSection);
+        TextView btnCancelCreateNewMode = dialog.findViewById(R.id.btnCancelCreateNewMode);
+        TextInputEditText etNewProductName = dialog.findViewById(R.id.etNewProductName);
+        TextInputEditText etNewProductCode = dialog.findViewById(R.id.etNewProductCode);
+        ImageButton btnScanNewProductCode = dialog.findViewById(R.id.btnScanNewProductCode);
+        TextInputEditText etNewProductStandardPrice = dialog.findViewById(R.id.etNewProductStandardPrice);
 
         TextInputEditText etCustomPrice = dialog.findViewById(R.id.etCustomPriceInput);
         TextInputEditText etNote = dialog.findViewById(R.id.etProductNoteInput);
+
+        setupCurrencyFormatting(etCustomPrice);
+        setupCurrencyFormatting(etNewProductStandardPrice);
 
         Button btnCancel = dialog.findViewById(R.id.btnCancelPicker);
         Button btnSave = dialog.findViewById(R.id.btnSaveCustomPrice);
 
         final Product[] selectedProductHolder = new Product[1];
+        final boolean[] isCreateNewMode = new boolean[]{false};
         boolean isEditing = productToEdit != null;
 
         if (isEditing) {
             tvTitle.setText("Sửa giá bán cho công ty");
-            llSelectSection.setVisibility(View.GONE); // Can't change the underlying product when just editing price
+            if (tvSubtitle != null) {
+                tvSubtitle.setText("Điều chỉnh giá bán riêng hoặc ghi chú cho mặt hàng này");
+            }
+            llSearchAndPickSection.setVisibility(View.VISIBLE);
+            tvPickerSearchLabel.setVisibility(View.GONE);
+            llSearchBarContainer.setVisibility(View.GONE);
+            rvPickerSearchResults.setVisibility(View.GONE);
+            cardNotFoundAction.setVisibility(View.GONE);
+            llCreateNewProductSection.setVisibility(View.GONE);
 
-            tvPickedName.setText(productToEdit.getProduct_name());
-            tvPickedCode.setText("Mã: " + productToEdit.getProduct_code());
-            tvPickedStandardPrice.setText("Giá niêm yết: " + productToEdit.getFormattedStandardPrice());
+            cardSelectedProduct.setVisibility(View.VISIBLE);
+            btnChangeSelectedProduct.setVisibility(View.GONE);
+
+            tvPickedProductName.setText(productToEdit.getProduct_name());
+            tvPickedProductCode.setText("Mã: " + (productToEdit.getProduct_code() != null ? productToEdit.getProduct_code() : "--"));
+            tvPickedStandardPrice.setText("• Giá niêm yết: " + productToEdit.getFormattedStandardPrice());
+
+            if (productToEdit.getImage_url() != null && !productToEdit.getImage_url().isEmpty()) {
+                Glide.with(this)
+                        .load(productToEdit.getImage_url())
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .error(android.R.drawable.ic_menu_gallery)
+                        .into(ivPickedProductImage);
+            } else {
+                ivPickedProductImage.setImageResource(android.R.drawable.ic_menu_gallery);
+            }
 
             long customPriceLong = Math.round(productToEdit.getCustom_price());
-            etCustomPrice.setText(String.valueOf(customPriceLong));
+            setCurrencyValue(etCustomPrice, customPriceLong);
             etNote.setText(productToEdit.getNote());
             btnSave.setText("Cập nhật giá");
         } else {
             tvTitle.setText("Thêm mặt hàng & Giá riêng");
-            llSelectSection.setVisibility(View.VISIBLE);
+            if (tvSubtitle != null) {
+                tvSubtitle.setText("Lưu giá bán lần đầu để các lần sau khớp giá chính xác");
+            }
+            llSearchAndPickSection.setVisibility(View.VISIBLE);
+            tvPickerSearchLabel.setVisibility(View.VISIBLE);
+            llSearchBarContainer.setVisibility(View.VISIBLE);
+            cardSelectedProduct.setVisibility(View.GONE);
+            btnChangeSelectedProduct.setVisibility(View.VISIBLE);
+            llCreateNewProductSection.setVisibility(View.GONE);
             btnSave.setText("Lưu giá riêng");
 
-            // Build product spinner items
-            List<String> productLabels = new ArrayList<>();
-            if (inventoryProducts.isEmpty()) {
-                productLabels.add("Chưa có sản phẩm nào trong kho");
-                selectedProductHolder[0] = null;
-            } else {
-                for (Product p : inventoryProducts) {
-                    String code = p.getProduct_code() != null ? "[" + p.getProduct_code() + "] " : "";
-                    productLabels.add(code + p.getProduct_name());
+            List<Product> searchResults = new ArrayList<>();
+            ProductPickerAdapter pickerAdapter = new ProductPickerAdapter(this, searchResults, chosen -> {
+                selectedProductHolder[0] = chosen;
+                isCreateNewMode[0] = false;
+
+                tvPickedProductName.setText(chosen.getProduct_name());
+                tvPickedProductCode.setText("Mã: " + (chosen.getProduct_code() != null ? chosen.getProduct_code() : "--"));
+                tvPickedStandardPrice.setText("• Giá niêm yết: " + currencyFormat.format(chosen.getSell_price()) + " đ");
+
+                if (chosen.getImage_url() != null && !chosen.getImage_url().isEmpty()) {
+                    Glide.with(this)
+                            .load(chosen.getImage_url())
+                            .placeholder(android.R.drawable.ic_menu_gallery)
+                            .error(android.R.drawable.ic_menu_gallery)
+                            .into(ivPickedProductImage);
+                } else {
+                    ivPickedProductImage.setImageResource(android.R.drawable.ic_menu_gallery);
                 }
 
-                // Pre-populate with first product immediately
-                selectedProductHolder[0] = inventoryProducts.get(0);
-                Product chosen = selectedProductHolder[0];
-                tvPickedName.setText(chosen.getProduct_name());
-                tvPickedCode.setText("Mã: " + (chosen.getProduct_code() != null ? chosen.getProduct_code() : "--"));
-                tvPickedStandardPrice.setText("Giá niêm yết: " + currencyFormat.format(chosen.getSell_price()) + " đ");
-                etCustomPrice.setText(String.valueOf(Math.round(chosen.getSell_price())));
-            }
+                cardSelectedProduct.setVisibility(View.VISIBLE);
+                llSearchBarContainer.setVisibility(View.GONE);
+                tvPickerSearchLabel.setVisibility(View.GONE);
+                rvPickerSearchResults.setVisibility(View.GONE);
+                cardNotFoundAction.setVisibility(View.GONE);
 
-            ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, productLabels);
-            spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spProductPicker.setAdapter(spinnerAdapter);
+                setCurrencyValue(etCustomPrice, Math.round(chosen.getSell_price()));
+            });
 
-            spProductPicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            rvPickerSearchResults.setLayoutManager(new LinearLayoutManager(this));
+            rvPickerSearchResults.setAdapter(pickerAdapter);
+            rvPickerSearchResults.setOnTouchListener((v, event) -> {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+                if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+                    v.getParent().requestDisallowInterceptTouchEvent(false);
+                }
+                return false;
+            });
+
+            Runnable filterRunnable = () -> {
+                String query = etPickerSearch.getText() != null ? etPickerSearch.getText().toString().trim() : "";
+                btnClearPickerSearch.setVisibility(query.isEmpty() ? View.GONE : View.VISIBLE);
+
+                searchResults.clear();
+                if (query.isEmpty()) {
+                    int limit = Math.min(inventoryProducts.size(), 50);
+                    for (int i = 0; i < limit; i++) {
+                        searchResults.add(inventoryProducts.get(i));
+                    }
+                    rvPickerSearchResults.setVisibility(searchResults.isEmpty() ? View.GONE : View.VISIBLE);
+                    cardNotFoundAction.setVisibility(View.VISIBLE);
+                    tvNotFoundActionTitle.setText("+ Thêm mới sản phẩm vào kho");
+                    tvNotFoundActionSubtitle.setText("Chưa có trong kho? Bấm để tạo mới và lưu giá luôn");
+                } else {
+                    String normQuery = removeDiacritics(query.toLowerCase());
+                    for (Product p : inventoryProducts) {
+                        String code = p.getProduct_code() != null ? removeDiacritics(p.getProduct_code().toLowerCase()) : "";
+                        String name = p.getProduct_name() != null ? removeDiacritics(p.getProduct_name().toLowerCase()) : "";
+                        if (code.contains(normQuery) || name.contains(normQuery)) {
+                            searchResults.add(p);
+                            if (searchResults.size() >= 50) break;
+                        }
+                    }
+                    if (searchResults.isEmpty()) {
+                        rvPickerSearchResults.setVisibility(View.GONE);
+                        cardNotFoundAction.setVisibility(View.VISIBLE);
+                        tvNotFoundActionTitle.setText("+ Tạo mới \"" + query + "\" vào kho");
+                        tvNotFoundActionSubtitle.setText("Không tìm thấy trong kho. Bấm để thêm mới và lưu giá ngay!");
+                    } else {
+                        rvPickerSearchResults.setVisibility(View.VISIBLE);
+                        cardNotFoundAction.setVisibility(View.VISIBLE);
+                        tvNotFoundActionTitle.setText("+ Thêm mới \"" + query + "\" vào kho");
+                        tvNotFoundActionSubtitle.setText("Không phải các sản phẩm trên? Bấm để tạo mới sản phẩm này");
+                    }
+                }
+
+                // If > 3 items, constrain dropdown height to 180dp; if 1-3 items, wrap content naturally
+                int maxDropdownHeight = Math.round(180 * getResources().getDisplayMetrics().density);
+                ViewGroup.LayoutParams params = rvPickerSearchResults.getLayoutParams();
+                if (params != null) {
+                    if (searchResults.size() > 3) {
+                        if (params.height != maxDropdownHeight) {
+                            params.height = maxDropdownHeight;
+                            rvPickerSearchResults.setLayoutParams(params);
+                        }
+                    } else {
+                        if (params.height != ViewGroup.LayoutParams.WRAP_CONTENT) {
+                            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                            rvPickerSearchResults.setLayoutParams(params);
+                        }
+                    }
+                }
+
+                pickerAdapter.updateList(searchResults);
+            };
+
+            filterRunnable.run();
+
+            btnClearPickerSearch.setOnClickListener(v -> etPickerSearch.setText(""));
+
+            etPickerSearch.addTextChangedListener(new TextWatcher() {
                 @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    if (position >= 0 && position < inventoryProducts.size()) {
-                        Product chosen = inventoryProducts.get(position);
-                        selectedProductHolder[0] = chosen;
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-                        tvPickedName.setText(chosen.getProduct_name());
-                        tvPickedCode.setText("Mã: " + (chosen.getProduct_code() != null ? chosen.getProduct_code() : "--"));
-                        tvPickedStandardPrice.setText("Giá niêm yết: " + currencyFormat.format(chosen.getSell_price()) + " đ");
-                        etCustomPrice.setText(String.valueOf(Math.round(chosen.getSell_price())));
+                @Override
+                public void onTextChanged(CharSequence s, int start, int count, int after) {
+                    filterRunnable.run();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+
+            btnChangeSelectedProduct.setOnClickListener(v -> {
+                selectedProductHolder[0] = null;
+                cardSelectedProduct.setVisibility(View.GONE);
+                llSearchBarContainer.setVisibility(View.VISIBLE);
+                tvPickerSearchLabel.setVisibility(View.VISIBLE);
+                filterRunnable.run();
+            });
+
+            cardNotFoundAction.setOnClickListener(v -> {
+                isCreateNewMode[0] = true;
+                selectedProductHolder[0] = null;
+                llSearchAndPickSection.setVisibility(View.GONE);
+                llCreateNewProductSection.setVisibility(View.VISIBLE);
+
+                String currentQuery = etPickerSearch.getText() != null ? etPickerSearch.getText().toString().trim() : "";
+                if (!currentQuery.isEmpty()) {
+                    etNewProductName.setText(currentQuery);
+                }
+                etNewProductName.requestFocus();
+            });
+
+            btnCancelCreateNewMode.setOnClickListener(v -> {
+                isCreateNewMode[0] = false;
+                llCreateNewProductSection.setVisibility(View.GONE);
+                llSearchAndPickSection.setVisibility(View.VISIBLE);
+                if (selectedProductHolder[0] != null) {
+                    cardSelectedProduct.setVisibility(View.VISIBLE);
+                    llSearchBarContainer.setVisibility(View.GONE);
+                    tvPickerSearchLabel.setVisibility(View.GONE);
+                    rvPickerSearchResults.setVisibility(View.GONE);
+                    cardNotFoundAction.setVisibility(View.GONE);
+                } else {
+                    cardSelectedProduct.setVisibility(View.GONE);
+                    llSearchBarContainer.setVisibility(View.VISIBLE);
+                    tvPickerSearchLabel.setVisibility(View.VISIBLE);
+                    filterRunnable.run();
+                }
+            });
+
+            etNewProductStandardPrice.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int count, int after) {
+                    if (isCreateNewMode[0]) {
+                        String stdStr = s != null ? s.toString().trim() : "";
+                        String customStr = etCustomPrice.getText() != null ? etCustomPrice.getText().toString().trim() : "";
+                        if (customStr.isEmpty() && !stdStr.isEmpty()) {
+                            etCustomPrice.setText(stdStr);
+                        }
                     }
                 }
 
                 @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-                }
+                public void afterTextChanged(Editable s) {}
             });
 
-            btnScan.setOnClickListener(v -> {
+            btnScanBarcodePicker.setOnClickListener(v -> {
+                activeDialogBarcodeListener = barcode -> {
+                    Product matched = null;
+                    for (Product p : inventoryProducts) {
+                        if (barcode.equalsIgnoreCase(p.getProduct_code())) {
+                            matched = p;
+                            break;
+                        }
+                    }
+                    if (matched != null) {
+                        selectedProductHolder[0] = matched;
+                        isCreateNewMode[0] = false;
+
+                        tvPickedProductName.setText(matched.getProduct_name());
+                        tvPickedProductCode.setText("Mã: " + (matched.getProduct_code() != null ? matched.getProduct_code() : "--"));
+                        tvPickedStandardPrice.setText("• Giá niêm yết: " + currencyFormat.format(matched.getSell_price()) + " đ");
+
+                        if (matched.getImage_url() != null && !matched.getImage_url().isEmpty()) {
+                            Glide.with(CompanyDetailActivity.this)
+                                    .load(matched.getImage_url())
+                                    .placeholder(android.R.drawable.ic_menu_gallery)
+                                    .error(android.R.drawable.ic_menu_gallery)
+                                    .into(ivPickedProductImage);
+                        } else {
+                            ivPickedProductImage.setImageResource(android.R.drawable.ic_menu_gallery);
+                        }
+
+                        cardSelectedProduct.setVisibility(View.VISIBLE);
+                        llSearchBarContainer.setVisibility(View.GONE);
+                        tvPickerSearchLabel.setVisibility(View.GONE);
+                        rvPickerSearchResults.setVisibility(View.GONE);
+                        cardNotFoundAction.setVisibility(View.GONE);
+
+                        setCurrencyValue(etCustomPrice, Math.round(matched.getSell_price()));
+                        Toast.makeText(CompanyDetailActivity.this, "Đã khớp sản phẩm: " + matched.getProduct_name(), Toast.LENGTH_SHORT).show();
+                    } else {
+                        isCreateNewMode[0] = true;
+                        selectedProductHolder[0] = null;
+                        llSearchAndPickSection.setVisibility(View.GONE);
+                        llCreateNewProductSection.setVisibility(View.VISIBLE);
+                        etNewProductCode.setText(barcode);
+                        etNewProductName.requestFocus();
+                        Toast.makeText(CompanyDetailActivity.this, "Mã " + barcode + " chưa có trong kho. Điền tên để tạo mới!", Toast.LENGTH_LONG).show();
+                    }
+                };
+                Intent intent = new Intent(this, ScannerActivity.class);
+                dialogBarcodeScannerLauncher.launch(intent);
+            });
+
+            btnScanNewProductCode.setOnClickListener(v -> {
+                activeDialogBarcodeListener = barcode -> {
+                    etNewProductCode.setText(barcode);
+                    Toast.makeText(CompanyDetailActivity.this, "Đã quét mã: " + barcode, Toast.LENGTH_SHORT).show();
+                };
                 Intent intent = new Intent(this, ScannerActivity.class);
                 dialogBarcodeScannerLauncher.launch(intent);
             });
@@ -470,7 +697,8 @@ public class CompanyDetailActivity extends AppCompatActivity {
 
             double customPrice;
             try {
-                customPrice = Double.parseDouble(priceStr);
+                String cleanPriceStr = priceStr.replaceAll("[^0-9]", "");
+                customPrice = Double.parseDouble(cleanPriceStr);
             } catch (Exception e) {
                 etCustomPrice.setError("Giá không hợp lệ");
                 return;
@@ -491,10 +719,64 @@ public class CompanyDetailActivity extends AppCompatActivity {
                             btnSave.setEnabled(true);
                             Toast.makeText(CompanyDetailActivity.this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
                         });
+            } else if (isCreateNewMode[0]) {
+                String newName = etNewProductName.getText() != null ? etNewProductName.getText().toString().trim() : "";
+                String newCode = etNewProductCode.getText() != null ? etNewProductCode.getText().toString().trim() : "";
+                String newStdPriceStr = etNewProductStandardPrice.getText() != null ? etNewProductStandardPrice.getText().toString().trim() : "";
+
+                if (newName.isEmpty()) {
+                    etNewProductName.setError("Vui lòng nhập tên sản phẩm mới");
+                    etNewProductName.requestFocus();
+                    btnSave.setEnabled(true);
+                    return;
+                }
+
+                double standardPrice = customPrice;
+                if (!newStdPriceStr.isEmpty()) {
+                    try {
+                        String cleanStdStr = newStdPriceStr.replaceAll("[^0-9]", "");
+                        standardPrice = Double.parseDouble(cleanStdStr);
+                    } catch (Exception ignored) {}
+                }
+
+                Product newProd = new Product();
+                newProd.setProduct_name(newName);
+                newProd.setProduct_code(newCode.isEmpty() ? null : newCode);
+                newProd.setSell_price(standardPrice);
+                newProd.setImport_price(0.0);
+                newProd.setStock_quantity(0);
+                newProd.setIs_bundle(false);
+
+                double finalStandardPrice = standardPrice;
+                firebaseHelper.addProductWithId(newProd, newDocId -> {
+                    CompanyProduct cp = new CompanyProduct(
+                            companyId,
+                            newDocId,
+                            newCode,
+                            newName,
+                            customPrice,
+                            finalStandardPrice,
+                            note
+                    );
+                    cp.setCompany_name(companyName);
+
+                    firebaseHelper.addOrUpdateCompanyProduct(companyId, cp,
+                            () -> {
+                                dialog.dismiss();
+                                Toast.makeText(CompanyDetailActivity.this, "Đã tạo sản phẩm mới vào kho và lưu giá riêng!", Toast.LENGTH_SHORT).show();
+                            },
+                            err -> {
+                                btnSave.setEnabled(true);
+                                Toast.makeText(CompanyDetailActivity.this, "Lỗi lưu giá công ty: " + err, Toast.LENGTH_SHORT).show();
+                            });
+                }, err -> {
+                    btnSave.setEnabled(true);
+                    Toast.makeText(CompanyDetailActivity.this, "Lỗi tạo sản phẩm mới: " + err, Toast.LENGTH_SHORT).show();
+                });
             } else {
                 Product chosenProduct = selectedProductHolder[0];
                 if (chosenProduct == null) {
-                    Toast.makeText(CompanyDetailActivity.this, "Vui lòng chọn sản phẩm", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CompanyDetailActivity.this, "Vui lòng chọn sản phẩm hoặc bấm 'Thêm mới'", Toast.LENGTH_SHORT).show();
                     btnSave.setEnabled(true);
                     return;
                 }
@@ -525,7 +807,7 @@ public class CompanyDetailActivity extends AppCompatActivity {
 
         dialog.setOnDismissListener(d -> {
             activePickerDialog = null;
-            activeProductSpinner = null;
+            activeDialogBarcodeListener = null;
         });
 
         dialog.show();
@@ -597,6 +879,59 @@ public class CompanyDetailActivity extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    private String formatCurrencyText(long amount) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.getDefault());
+        symbols.setGroupingSeparator('.');
+        DecimalFormat df = new DecimalFormat("#,##0", symbols);
+        return df.format(amount);
+    }
+
+    private void setCurrencyValue(EditText editText, long value) {
+        if (editText == null) return;
+        editText.setText(value > 0 ? formatCurrencyText(value) : (value == 0 ? "0" : ""));
+        if (editText.getText() != null) {
+            editText.setSelection(editText.getText().length());
+        }
+    }
+
+    private void setupCurrencyFormatting(EditText editText) {
+        editText.addTextChangedListener(new TextWatcher() {
+            private String current = "";
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String str = s.toString();
+                if (str.equals(current)) return;
+                editText.removeTextChangedListener(this);
+
+                String cleanString = str.replaceAll("[^0-9]", "");
+                if (cleanString.isEmpty()) {
+                    current = "";
+                    editText.setText("");
+                } else {
+                    try {
+                        long parsed = Long.parseLong(cleanString);
+                        String formatted = formatCurrencyText(parsed);
+                        current = formatted;
+                        editText.setText(formatted);
+                        editText.setSelection(formatted.length());
+                    } catch (NumberFormatException e) {
+                        editText.setText(current);
+                        editText.setSelection(current.length());
+                    }
+                }
+
+                editText.addTextChangedListener(this);
+            }
+        });
     }
 
     private String removeDiacritics(String str) {

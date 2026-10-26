@@ -59,6 +59,12 @@ public class FirebaseHelper {
 
 
     public void addProduct(Product product, OnSuccessListener successListener, OnFailureListener failureListener) {
+        addProductWithId(product, id -> {
+            if (successListener != null) successListener.onSuccess();
+        }, failureListener);
+    }
+
+    public void addProductWithId(Product product, OnProductAddedListener successListener, OnFailureListener failureListener) {
         String userId = getCurrentUserId();
         if (userId == null) {
             if (failureListener != null)
@@ -91,12 +97,16 @@ public class FirebaseHelper {
                     addPriceHistory(docRef.getId(), initialHistory);
 
                     if (successListener != null)
-                        successListener.onSuccess();
+                        successListener.onProductAdded(docRef.getId());
                 })
                 .addOnFailureListener(e -> {
                     if (failureListener != null)
                         failureListener.onFailure(e.getMessage());
                 });
+    }
+
+    public interface OnProductAddedListener {
+        void onProductAdded(String productId);
     }
 
     public void updateProduct(String id, Product updatedProduct, PriceHistory potentialHistory,
