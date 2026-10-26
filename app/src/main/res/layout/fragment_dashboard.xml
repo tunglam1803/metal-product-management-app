@@ -433,6 +433,70 @@
                             android:src="@android:drawable/ic_media_play"
                             app:tint="@color/text_hint" />
                     </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider"
+                        android:layout_marginHorizontal="16dp" />
+
+                    <!-- Action: Companies & Custom Pricing -->
+                    <LinearLayout
+                        android:id="@+id/btnActionCompanies"
+                        android:layout_width="match_parent"
+                        android:layout_height="68dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?android:attr/selectableItemBackground">
+
+                        <FrameLayout
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/bg_icon_circle_purple">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_company"
+                                app:tint="@color/colorPrimary"
+                                android:layout_gravity="center" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Công ty mua hàng"
+                                android:textColor="@color/colorTextDark"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif-medium" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Theo dõi bảng giá riêng từng khách hàng"
+                                android:textColor="@color/colorTextGrey"
+                                android:textSize="12sp"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="sans-serif" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@android:drawable/ic_media_play"
+                            app:tint="@color/text_hint" />
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

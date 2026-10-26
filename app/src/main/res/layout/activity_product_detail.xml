@@ -455,6 +455,21 @@
             android:layout_marginBottom="12dp"
             android:visibility="gone" />
 
+        <!-- View Company Prices Button (visible in view mode only) -->
+        <android.widget.Button
+            android:id="@+id/btnViewCompanyPrices"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="🏢 Giá bán theo công ty"
+            android:textColor="@color/colorPriceOrange"
+            android:background="@drawable/bg_pill_price"
+            android:backgroundTint="@color/cardAccentOrange"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone" />
+
         <!-- Save Button (visible in edit mode only) -->
         <android.widget.Button
             android:id="@+id/btnSave"

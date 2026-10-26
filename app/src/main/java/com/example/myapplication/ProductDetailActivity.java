@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -82,7 +83,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private EditText etProductCode, etProductName, etImportPrice, etSellPrice, etStockQuantity, etNote;
     private SwitchMaterial swIsBundle;
-    private Button btnSave, btnEdit, btnViewHistory;
+    private Button btnSave, btnEdit, btnViewHistory, btnViewCompanyPrices;
     private TextView tvLastImportInfo;
     private ImageView imgPreview;
     private View btnPickImage;
@@ -175,6 +176,10 @@ public class ProductDetailActivity extends AppCompatActivity {
             hideKeyboard();
             showQrCodeDialog();
         });
+        btnViewCompanyPrices.setOnClickListener(v -> {
+            hideKeyboard();
+            showCompanyPrices();
+        });
 
         // Setup currency formatting for price fields
         setupCurrencyFormatting(etImportPrice);
@@ -217,6 +222,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         spCategory = findViewById(R.id.spCategory);
         btnScanCode = findViewById(R.id.btnScanCode);
         btnGenerateQR = findViewById(R.id.btnGenerateQR);
+        btnViewCompanyPrices = findViewById(R.id.btnViewCompanyPrices);
 
         final View scrollView = findViewById(R.id.scrollView);
         if (scrollView instanceof android.widget.ScrollView) {
@@ -269,6 +275,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         // Show QR button only in view mode when product has a code
         String currentCode = etProductCode.getText().toString().trim();
         btnGenerateQR.setVisibility(!edit && productId != null && !currentCode.isEmpty() ? View.VISIBLE : View.GONE);
+        btnViewCompanyPrices.setVisibility(!edit && productId != null ? View.VISIBLE : View.GONE);
         
         if (productId != null) {
             btnEdit.setVisibility(edit ? View.GONE : View.VISIBLE);
@@ -686,6 +693,81 @@ public class ProductDetailActivity extends AppCompatActivity {
 
             adapter.setHistories(histories);
             tvEmptyHistory.setVisibility(histories.isEmpty() ? View.VISIBLE : View.GONE);
+        });
+
+        dialog.show();
+    }
+
+    private void showCompanyPrices() {
+        if (productId == null) return;
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_product_companies, null);
+        dialog.setContentView(sheetView);
+
+        RecyclerView rv = sheetView.findViewById(R.id.rvCompanyPrices);
+        View emptyState = sheetView.findViewById(R.id.llEmptyCompanies);
+        ImageButton btnClose = sheetView.findViewById(R.id.btnCloseSheet);
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        rv.setLayoutManager(new LinearLayoutManager(this));
+
+        firebaseHelper.getCompaniesForProduct(productId, list -> {
+            if (list == null || list.isEmpty()) {
+                emptyState.setVisibility(View.VISIBLE);
+                rv.setVisibility(View.GONE);
+            } else {
+                emptyState.setVisibility(View.GONE);
+                rv.setVisibility(View.VISIBLE);
+
+                rv.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+                    @NonNull
+                    @Override
+                    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                        View v = getLayoutInflater().inflate(R.layout.item_product_company_price, parent, false);
+                        return new RecyclerView.ViewHolder(v) {};
+                    }
+
+                    @Override
+                    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                        com.example.myapplication.models.CompanyProduct cp = list.get(position);
+                        TextView tvName = holder.itemView.findViewById(R.id.tvCompanyName);
+                        TextView tvPrice = holder.itemView.findViewById(R.id.tvPrice);
+                        TextView tvNote = holder.itemView.findViewById(R.id.tvNote);
+                        TextView tvDate = holder.itemView.findViewById(R.id.tvDate);
+
+                        tvName.setText(cp.getCompany_name());
+                        tvPrice.setText(cp.getFormattedCustomPrice());
+
+                        if (cp.getNote() != null && !cp.getNote().trim().isEmpty()) {
+                            tvNote.setVisibility(View.VISIBLE);
+                            tvNote.setText("Ghi chú: " + cp.getNote());
+                        } else {
+                            tvNote.setVisibility(View.GONE);
+                        }
+
+                        if (cp.getUpdated_at() != null && cp.getUpdated_at() > 0) {
+                            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                            tvDate.setText("Cập nhật: " + df.format(new Date(cp.getUpdated_at() * 1000L)));
+                            tvDate.setVisibility(View.VISIBLE);
+                        } else {
+                            tvDate.setVisibility(View.GONE);
+                        }
+
+                        holder.itemView.setOnClickListener(v -> {
+                            dialog.dismiss();
+                            Intent intent = new Intent(ProductDetailActivity.this, CompanyDetailActivity.class);
+                            intent.putExtra("COMPANY_ID", cp.getCompany_id());
+                            intent.putExtra("COMPANY_NAME", cp.getCompany_name());
+                            startActivity(intent);
+                        });
+                    }
+
+                    @Override
+                    public int getItemCount() {
+                        return list.size();
+                    }
+                });
+            }
         });
 
         dialog.show();

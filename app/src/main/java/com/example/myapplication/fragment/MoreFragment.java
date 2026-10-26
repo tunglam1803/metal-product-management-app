@@ -147,6 +147,14 @@ public class MoreFragment extends Fragment {
             }
         });
 
+        // 3.5 Handle Company & Custom Pricing
+        LinearLayout llCompanyRow = view.findViewById(R.id.llCompanyRow);
+        if (llCompanyRow != null) {
+            llCompanyRow.setOnClickListener(v -> {
+                startActivity(new Intent(getActivity(), com.example.myapplication.CompanyListActivity.class));
+            });
+        }
+
         // 4. Handle Terms & User Guide
         LinearLayout llTermsRow = view.findViewById(R.id.llTermsRow);
         llTermsRow.setOnClickListener(v -> showTermsDialog());

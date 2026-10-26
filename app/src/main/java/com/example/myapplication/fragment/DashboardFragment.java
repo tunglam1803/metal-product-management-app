@@ -72,6 +72,7 @@ public class DashboardFragment extends Fragment {
         View btnActionProducts = view.findViewById(R.id.btnActionProducts);
         View btnActionAddProduct = view.findViewById(R.id.btnActionAddProduct);
         View btnActionAddCategory = view.findViewById(R.id.btnActionAddCategory);
+        View btnActionCompanies = view.findViewById(R.id.btnActionCompanies);
 
         // 2. Setup Profile Info
         FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -104,6 +105,10 @@ public class DashboardFragment extends Fragment {
         });
 
         btnActionAddCategory.setOnClickListener(v -> showCategoryManagerDialog());
+
+        btnActionCompanies.setOnClickListener(v -> {
+            startActivity(new Intent(getActivity(), com.example.myapplication.CompanyListActivity.class));
+        });
 
         // 5. Load Real-time Stats and List
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayoutDashboard);

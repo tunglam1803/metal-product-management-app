@@ -2,16 +2,22 @@ package com.example.myapplication.helpers;
 
 import android.util.Log;
 
+import com.example.myapplication.models.Company;
+import com.example.myapplication.models.CompanyProduct;
 import com.example.myapplication.models.PriceHistory;
 import com.example.myapplication.models.Product;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FirebaseHelper {
@@ -271,11 +277,246 @@ public class FirebaseHelper {
                 });
     }
 
+    // ==========================================
+    // COMPANY & CUSTOM PRICING MANAGEMENT
+    // ==========================================
+
+    public ListenerRegistration listenForCompanies(EventListener<QuerySnapshot> listener) {
+        String userId = getCurrentUserId();
+        if (userId == null)
+            return null;
+        return db.collection("companies")
+                .whereEqualTo("user_id", userId)
+                .addSnapshotListener(listener);
+    }
+
+    public void addCompany(Company company, OnCompanyAddedListener successListener, OnFailureListener failureListener) {
+        String userId = getCurrentUserId();
+        if (userId == null) {
+            if (failureListener != null)
+                failureListener.onFailure("Người dùng chưa xác thực!");
+            return;
+        }
+        long now = System.currentTimeMillis() / 1000L;
+        Map<String, Object> map = new HashMap<>();
+        map.put("user_id", userId);
+        map.put("company_name", company.getCompany_name());
+        map.put("phone", company.getPhone());
+        map.put("address", company.getAddress());
+        map.put("note", company.getNote());
+        map.put("items_count", 0);
+        map.put("created_at", now);
+        map.put("updated_at", now);
+
+        db.collection("companies")
+                .add(map)
+                .addOnSuccessListener(docRef -> {
+                    if (successListener != null) {
+                        successListener.onCompanyAdded(docRef.getId());
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (failureListener != null)
+                        failureListener.onFailure(e.getMessage());
+                });
+    }
+
+    public void updateCompany(String companyId, Company company, OnSuccessListener successListener, OnFailureListener failureListener) {
+        String userId = getCurrentUserId();
+        if (userId == null)
+            return;
+        long now = System.currentTimeMillis() / 1000L;
+        Map<String, Object> map = new HashMap<>();
+        map.put("company_name", company.getCompany_name());
+        map.put("phone", company.getPhone());
+        map.put("address", company.getAddress());
+        map.put("note", company.getNote());
+        map.put("updated_at", now);
+
+        db.collection("companies")
+                .document(companyId)
+                .update(map)
+                .addOnSuccessListener(aVoid -> {
+                    if (successListener != null)
+                        successListener.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    if (failureListener != null)
+                        failureListener.onFailure(e.getMessage());
+                });
+    }
+
+    public void deleteCompany(String companyId, OnSuccessListener successListener, OnFailureListener failureListener) {
+        // Delete all products inside companies/{companyId}/products first
+        db.collection("companies").document(companyId).collection("products").get()
+                .addOnSuccessListener(snapshots -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snapshots) {
+                        batch.delete(doc.getReference());
+                    }
+                    batch.delete(db.collection("companies").document(companyId));
+                    batch.commit()
+                            .addOnSuccessListener(aVoid -> {
+                                if (successListener != null)
+                                    successListener.onSuccess();
+                            })
+                            .addOnFailureListener(e -> {
+                                if (failureListener != null)
+                                    failureListener.onFailure(e.getMessage());
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    if (failureListener != null)
+                        failureListener.onFailure(e.getMessage());
+                });
+    }
+
+    public ListenerRegistration listenForCompanyProducts(String companyId, EventListener<QuerySnapshot> listener) {
+        return db.collection("companies")
+                .document(companyId)
+                .collection("products")
+                .addSnapshotListener(listener);
+    }
+
+    public void addOrUpdateCompanyProduct(String companyId, CompanyProduct cp, OnSuccessListener successListener, OnFailureListener failureListener) {
+        String userId = getCurrentUserId();
+        if (userId == null)
+            return;
+        long now = System.currentTimeMillis() / 1000L;
+
+        String docId = cp.getProduct_id() != null && !cp.getProduct_id().isEmpty() ? cp.getProduct_id() : cp.getId();
+        if (docId == null || docId.isEmpty()) {
+            docId = db.collection("companies").document(companyId).collection("products").document().getId();
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("user_id", userId);
+        map.put("company_id", companyId);
+        map.put("company_name", cp.getCompany_name());
+        map.put("product_id", cp.getProduct_id());
+        map.put("product_code", cp.getProduct_code());
+        map.put("product_name", cp.getProduct_name());
+        map.put("image_url", cp.getImage_url());
+        map.put("custom_price", cp.getCustom_price());
+        map.put("standard_price", cp.getStandard_price());
+        map.put("note", cp.getNote());
+        map.put("updated_at", now);
+
+        db.collection("companies")
+                .document(companyId)
+                .collection("products")
+                .document(docId)
+                .set(map)
+                .addOnSuccessListener(aVoid -> {
+                    // Update items_count and updated_at on the parent company document
+                    recalculateCompanyItemsCount(companyId);
+                    if (successListener != null)
+                        successListener.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    if (failureListener != null)
+                        failureListener.onFailure(e.getMessage());
+                });
+    }
+
+    public void deleteCompanyProduct(String companyId, String productId, OnSuccessListener successListener, OnFailureListener failureListener) {
+        db.collection("companies")
+                .document(companyId)
+                .collection("products")
+                .document(productId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    recalculateCompanyItemsCount(companyId);
+                    if (successListener != null)
+                        successListener.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    if (failureListener != null)
+                        failureListener.onFailure(e.getMessage());
+                });
+    }
+
+    private void recalculateCompanyItemsCount(String companyId) {
+        db.collection("companies").document(companyId).collection("products").get()
+                .addOnSuccessListener(snapshots -> {
+                    int count = snapshots.size();
+                    db.collection("companies").document(companyId).update(
+                            "items_count", count,
+                            "updated_at", System.currentTimeMillis() / 1000L
+                    );
+                });
+    }
+
+    public void getCompaniesForProduct(String productId, OnCompanyProductsLoadedListener listener) {
+        String userId = getCurrentUserId();
+        if (userId == null) {
+            if (listener != null) listener.onLoaded(new ArrayList<>());
+            return;
+        }
+
+        // Get all companies for this user, then fetch products matching productId
+        db.collection("companies")
+                .whereEqualTo("user_id", userId)
+                .get()
+                .addOnSuccessListener(companiesSnap -> {
+                    if (companiesSnap.isEmpty()) {
+                        if (listener != null) listener.onLoaded(new ArrayList<>());
+                        return;
+                    }
+
+                    List<CompanyProduct> result = new ArrayList<>();
+                    final int totalCompanies = companiesSnap.size();
+                    final int[] checked = {0};
+
+                    for (DocumentSnapshot cDoc : companiesSnap.getDocuments()) {
+                        String companyId = cDoc.getId();
+                        String companyName = cDoc.getString("company_name");
+
+                        db.collection("companies")
+                                .document(companyId)
+                                .collection("products")
+                                .document(productId)
+                                .get()
+                                .addOnSuccessListener(pDoc -> {
+                                    if (pDoc.exists()) {
+                                        CompanyProduct cp = pDoc.toObject(CompanyProduct.class);
+                                        if (cp != null) {
+                                            cp.setId(pDoc.getId());
+                                            cp.setCompany_name(companyName);
+                                            result.add(cp);
+                                        }
+                                    }
+                                    checked[0]++;
+                                    if (checked[0] == totalCompanies && listener != null) {
+                                        listener.onLoaded(result);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    checked[0]++;
+                                    if (checked[0] == totalCompanies && listener != null) {
+                                        listener.onLoaded(result);
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onLoaded(new ArrayList<>());
+                });
+    }
+
     public interface OnSuccessListener {
         void onSuccess();
     }
 
     public interface OnFailureListener {
         void onFailure(String error);
+    }
+
+    public interface OnCompanyAddedListener {
+        void onCompanyAdded(String companyId);
+    }
+
+    public interface OnCompanyProductsLoadedListener {
+        void onLoaded(List<CompanyProduct> list);
     }
 }
