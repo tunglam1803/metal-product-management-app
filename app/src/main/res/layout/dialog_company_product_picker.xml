@@ -328,8 +328,75 @@
                     android:text="Quay lại tìm kiếm"
                     android:textColor="@color/colorTextGrey"
                     android:textSize="11sp"
+                    android:padding="4dp"
                     android:fontFamily="sans-serif" />
             </LinearLayout>
+
+            <!-- Product Image Picker Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/divider"
+                app:cardBackgroundColor="@color/colorSurfaceVariant">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="10dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0.5dp"
+                        app:strokeColor="@color/divider">
+
+                        <ImageView
+                            android:id="@+id/ivNewProductImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@android:drawable/ic_menu_gallery"
+                            android:contentDescription="Ảnh sản phẩm mới" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <Button
+                            android:id="@+id/btnPickNewProductImage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Chụp / Chọn ảnh"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorPrimary"
+                            android:background="@drawable/bg_share_btn"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/tvNewProductUploadStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Chưa có ảnh (tùy chọn)"
+                            android:textColor="@color/colorTextGrey"
+                            android:textSize="11sp"
+                            android:fontFamily="sans-serif" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- New Product Name -->
             <com.google.android.material.textfield.TextInputLayout
@@ -362,7 +429,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Mã sản phẩm (SKU)"
+                    android:hint="Mã sản phẩm (SKU) - Để trống tự tạo"
                     app:boxStrokeColor="@color/colorPrimary"
                     app:hintTextColor="@color/colorPrimary"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
@@ -387,25 +454,163 @@
                     android:contentDescription="Quét mã vạch" />
             </LinearLayout>
 
-            <!-- New Product Standard Price in Inventory -->
+            <!-- Category Spinner Group -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Danh mục sản phẩm"
+                    android:textColor="@color/colorTextDark"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <Spinner
+                    android:id="@+id/spNewProductCategory"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="@drawable/edit_text_background"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp" />
+            </LinearLayout>
+
+            <!-- Pricing: Giá nhập kho & Giá bán niêm yết kho -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <!-- New Product Import Price -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:hint="Giá nhập kho (VNĐ)"
+                    app:boxStrokeColor="@color/colorPrimary"
+                    app:hintTextColor="@color/colorPrimary"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNewProductImportPrice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:digits="0123456789."
+                        android:textColor="@color/colorTextDark"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- New Product Standard Sell Price -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:hint="Giá niêm yết kho (VNĐ)"
+                    app:boxStrokeColor="@color/colorPrimary"
+                    app:hintTextColor="@color/colorPrimary"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNewProductStandardPrice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:digits="0123456789."
+                        android:textColor="@color/colorTextDark"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- Stock quantity & Bundle switch -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="10dp">
+
+                <!-- Stock Quantity -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:hint="Tồn kho ban đầu"
+                    app:boxStrokeColor="@color/colorPrimary"
+                    app:hintTextColor="@color/colorPrimary"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNewProductStockQuantity"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:text="0"
+                        android:textColor="@color/colorTextDark"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Bundle Switch -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/swNewProductIsBundle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Bán kèm (Bundle)"
+                        android:textColor="@color/colorTextDark"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- New Product Inventory Note -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:hint="Giá bán niêm yết trong kho (VNĐ)"
+                android:hint="Ghi chú sản phẩm trong kho (công dụng, đặc tính...)"
                 app:boxStrokeColor="@color/colorPrimary"
                 app:hintTextColor="@color/colorPrimary"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etNewProductStandardPrice"
+                    android:id="@+id/etNewProductNote"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:digits="0123456789."
+                    android:inputType="textMultiLine"
+                    android:minLines="1"
                     android:textColor="@color/colorTextDark"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Shortcut to open full ProductDetailActivity if desired -->
+            <TextView
+                android:id="@+id/btnOpenFullAddProductScreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="6dp"
+                android:text="Mở toàn màn hình thêm sản phẩm ↗"
+                android:textColor="@color/colorPrimary"
+                android:textSize="11sp"
+                android:padding="4dp"
+                android:fontFamily="sans-serif-medium" />
         </LinearLayout>
 
         <!-- ═══════════════════════════════════════════════ -->

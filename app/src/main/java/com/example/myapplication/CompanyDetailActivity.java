@@ -1,10 +1,13 @@
 package com.example.myapplication;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MotionEvent;
@@ -23,7 +26,10 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -32,15 +38,21 @@ import com.bumptech.glide.Glide;
 import com.example.myapplication.adapters.CompanyProductAdapter;
 import com.example.myapplication.adapters.ProductPickerAdapter;
 import com.example.myapplication.helpers.FirebaseHelper;
+import com.example.myapplication.models.Category;
 import com.example.myapplication.models.Company;
 import com.example.myapplication.models.CompanyProduct;
 import com.example.myapplication.models.Product;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.Normalizer;
@@ -48,6 +60,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class CompanyDetailActivity extends AppCompatActivity {
 
@@ -82,6 +102,19 @@ public class CompanyDetailActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> barcodeScannerLauncher;
     private ActivityResultLauncher<Intent> dialogBarcodeScannerLauncher;
+    private ActivityResultLauncher<Intent> dialogImagePickerLauncher;
+    private ActivityResultLauncher<Uri> dialogCameraLauncher;
+    private ActivityResultLauncher<String> dialogCameraPermissionLauncher;
+    private ActivityResultLauncher<Intent> fullAddProductLauncher;
+    private Uri dialogCameraPhotoUri;
+    private String currentDialogUploadedImageUrl = null;
+    private ImageView currentDialogImageView = null;
+    private TextView currentDialogUploadStatus = null;
+    private Button currentDialogSaveButton = null;
+
+    private final List<Category> categoriesList = new ArrayList<>();
+    private ArrayAdapter<String> categoryAdapter;
+
     private Dialog activePickerDialog;
     private OnBarcodeScannedListener activeDialogBarcodeListener;
 
@@ -113,6 +146,7 @@ public class CompanyDetailActivity extends AppCompatActivity {
         }
 
         initScannerLaunchers();
+        initImagePickerLaunchers();
         initViews();
         setupRecyclerView();
         setupSearch();
@@ -145,6 +179,180 @@ public class CompanyDetailActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private void initImagePickerLaunchers() {
+        dialogImagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        if (imageUri != null) {
+                            if (currentDialogImageView != null) {
+                                currentDialogImageView.setImageTintList(null);
+                                currentDialogImageView.setImageURI(imageUri);
+                                currentDialogImageView.setPadding(0, 0, 0, 0);
+                            }
+                            uploadDialogImageToSupabase(imageUri);
+                        }
+                    }
+                });
+
+        dialogCameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.TakePicture(),
+                success -> {
+                    if (success && dialogCameraPhotoUri != null) {
+                        if (currentDialogImageView != null) {
+                            currentDialogImageView.setImageTintList(null);
+                            currentDialogImageView.setImageURI(dialogCameraPhotoUri);
+                            currentDialogImageView.setPadding(0, 0, 0, 0);
+                        }
+                        uploadDialogImageToSupabase(dialogCameraPhotoUri);
+                    }
+                });
+
+        dialogCameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        openDialogCamera();
+                    } else {
+                        Toast.makeText(this, "Bạn cần cấp quyền Camera để chụp ảnh!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        fullAddProductLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    loadInventoryProducts();
+                });
+    }
+
+    private void openDialogCamera() {
+        try {
+            File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    "product_" + System.currentTimeMillis() + ".jpg");
+            dialogCameraPhotoUri = FileProvider.getUriForFile(this,
+                    getPackageName() + ".fileprovider", photoFile);
+            dialogCameraLauncher.launch(dialogCameraPhotoUri);
+        } catch (Exception e) {
+            Toast.makeText(this, "Không thể mở camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showDialogImageSourceChooser() {
+        String[] options = {"Chụp ảnh", "Chọn từ thư viện"};
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Chọn ảnh sản phẩm")
+                .setItems(options, (d, which) -> {
+                    if (which == 0) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                            openDialogCamera();
+                        } else {
+                            dialogCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+                        }
+                    } else {
+                        Intent intent = new Intent(Intent.ACTION_PICK);
+                        intent.setType("image/*");
+                        dialogImagePickerLauncher.launch(intent);
+                    }
+                })
+                .show();
+    }
+
+    private void uploadDialogImageToSupabase(Uri uri) {
+        if (currentDialogUploadStatus != null) {
+            currentDialogUploadStatus.setText("Đang tải ảnh lên...");
+        }
+        if (currentDialogSaveButton != null) {
+            currentDialogSaveButton.setEnabled(false);
+        }
+
+        String BUCKET = "uploads";
+        String fileName = "product_" + System.currentTimeMillis() + ".jpg";
+        String uploadUrl = BuildConfig.SUPABASE_URL + "/storage/v1/object/" + BUCKET + "/" + fileName;
+
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[4096];
+            while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            buffer.flush();
+            byte[] imageBytes = buffer.toByteArray();
+
+            RequestBody body = RequestBody.create(imageBytes, MediaType.parse("image/jpeg"));
+            Request request = new Request.Builder()
+                    .url(uploadUrl)
+                    .addHeader("Authorization", "Bearer " + BuildConfig.SUPABASE_ANON_KEY)
+                    .put(body)
+                    .build();
+
+            new OkHttpClient().newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    runOnUiThread(() -> {
+                        if (currentDialogUploadStatus != null) {
+                            currentDialogUploadStatus.setText("Lỗi tải ảnh!");
+                        }
+                        if (currentDialogSaveButton != null) {
+                            currentDialogSaveButton.setEnabled(true);
+                        }
+                        Toast.makeText(CompanyDetailActivity.this, "Tải ảnh thất bại", Toast.LENGTH_SHORT).show();
+                    });
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    runOnUiThread(() -> {
+                        if (currentDialogSaveButton != null) {
+                            currentDialogSaveButton.setEnabled(true);
+                        }
+                        if (response.isSuccessful()) {
+                            currentDialogUploadedImageUrl = BuildConfig.SUPABASE_URL + "/storage/v1/object/" + BUCKET + "/" + fileName;
+                            if (currentDialogUploadStatus != null) {
+                                currentDialogUploadStatus.setText("Tải ảnh hoàn tất!");
+                            }
+                        } else {
+                            if (currentDialogUploadStatus != null) {
+                                currentDialogUploadStatus.setText("Lỗi máy chủ (" + response.code() + ")");
+                            }
+                        }
+                    });
+                }
+            });
+        } catch (Exception e) {
+            if (currentDialogUploadStatus != null) {
+                currentDialogUploadStatus.setText("Lỗi đọc file ảnh!");
+            }
+            if (currentDialogSaveButton != null) {
+                currentDialogSaveButton.setEnabled(true);
+            }
+        }
+    }
+
+    private void loadCategoriesForPicker(Spinner spCategory) {
+        firebaseHelper.seedDefaultCategoriesIfNeeded(() -> {
+            firebaseHelper.listenForCategories((value, error) -> {
+                if (error != null || value == null) return;
+                categoriesList.clear();
+                List<String> names = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : value) {
+                    Category cat = doc.toObject(Category.class);
+                    cat.setId(doc.getId());
+                    categoriesList.add(cat);
+                    names.add(cat.getCategory_name());
+                }
+                if (spCategory != null && !isFinishing()) {
+                    categoryAdapter = new ArrayAdapter<>(CompanyDetailActivity.this,
+                            android.R.layout.simple_spinner_item, names);
+                    categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spCategory.setAdapter(categoryAdapter);
+                }
+            });
+        });
     }
 
     private void initViews() {
@@ -390,19 +598,54 @@ public class CompanyDetailActivity extends AppCompatActivity {
 
         LinearLayout llCreateNewProductSection = dialog.findViewById(R.id.llCreateNewProductSection);
         TextView btnCancelCreateNewMode = dialog.findViewById(R.id.btnCancelCreateNewMode);
+
+        ImageView ivNewProductImage = dialog.findViewById(R.id.ivNewProductImage);
+        Button btnPickNewProductImage = dialog.findViewById(R.id.btnPickNewProductImage);
+        TextView tvNewProductUploadStatus = dialog.findViewById(R.id.tvNewProductUploadStatus);
+
         TextInputEditText etNewProductName = dialog.findViewById(R.id.etNewProductName);
         TextInputEditText etNewProductCode = dialog.findViewById(R.id.etNewProductCode);
         ImageButton btnScanNewProductCode = dialog.findViewById(R.id.btnScanNewProductCode);
+        Spinner spNewProductCategory = dialog.findViewById(R.id.spNewProductCategory);
+        TextInputEditText etNewProductImportPrice = dialog.findViewById(R.id.etNewProductImportPrice);
         TextInputEditText etNewProductStandardPrice = dialog.findViewById(R.id.etNewProductStandardPrice);
+        TextInputEditText etNewProductStockQuantity = dialog.findViewById(R.id.etNewProductStockQuantity);
+        SwitchMaterial swNewProductIsBundle = dialog.findViewById(R.id.swNewProductIsBundle);
+        TextInputEditText etNewProductNote = dialog.findViewById(R.id.etNewProductNote);
+        TextView btnOpenFullAddProductScreen = dialog.findViewById(R.id.btnOpenFullAddProductScreen);
 
         TextInputEditText etCustomPrice = dialog.findViewById(R.id.etCustomPriceInput);
         TextInputEditText etNote = dialog.findViewById(R.id.etProductNoteInput);
 
-        setupCurrencyFormatting(etCustomPrice);
-        setupCurrencyFormatting(etNewProductStandardPrice);
-
         Button btnCancel = dialog.findViewById(R.id.btnCancelPicker);
         Button btnSave = dialog.findViewById(R.id.btnSaveCustomPrice);
+
+        currentDialogUploadedImageUrl = null;
+        currentDialogImageView = ivNewProductImage;
+        currentDialogUploadStatus = tvNewProductUploadStatus;
+        currentDialogSaveButton = btnSave;
+
+        loadCategoriesForPicker(spNewProductCategory);
+
+        if (btnPickNewProductImage != null) {
+            btnPickNewProductImage.setOnClickListener(v -> showDialogImageSourceChooser());
+        }
+
+        if (btnOpenFullAddProductScreen != null) {
+            btnOpenFullAddProductScreen.setOnClickListener(v -> {
+                Intent fullAddIntent = new Intent(this, ProductDetailActivity.class);
+                String typedCode = etNewProductCode.getText() != null ? etNewProductCode.getText().toString().trim() : "";
+                if (!typedCode.isEmpty()) {
+                    fullAddIntent.putExtra("PRODUCT_CODE", typedCode);
+                }
+                fullAddProductLauncher.launch(fullAddIntent);
+                dialog.dismiss();
+            });
+        }
+
+        setupCurrencyFormatting(etCustomPrice);
+        setupCurrencyFormatting(etNewProductImportPrice);
+        setupCurrencyFormatting(etNewProductStandardPrice);
 
         final Product[] selectedProductHolder = new Product[1];
         final boolean[] isCreateNewMode = new boolean[]{false};
@@ -722,7 +965,11 @@ public class CompanyDetailActivity extends AppCompatActivity {
             } else if (isCreateNewMode[0]) {
                 String newName = etNewProductName.getText() != null ? etNewProductName.getText().toString().trim() : "";
                 String newCode = etNewProductCode.getText() != null ? etNewProductCode.getText().toString().trim() : "";
+                String newImportPriceStr = etNewProductImportPrice.getText() != null ? etNewProductImportPrice.getText().toString().trim() : "";
                 String newStdPriceStr = etNewProductStandardPrice.getText() != null ? etNewProductStandardPrice.getText().toString().trim() : "";
+                String sStock = etNewProductStockQuantity.getText() != null ? etNewProductStockQuantity.getText().toString().trim() : "";
+                String productNote = etNewProductNote.getText() != null ? etNewProductNote.getText().toString().trim() : "";
+                boolean isBundle = swNewProductIsBundle.isChecked();
 
                 if (newName.isEmpty()) {
                     etNewProductName.setError("Vui lòng nhập tên sản phẩm mới");
@@ -731,47 +978,90 @@ public class CompanyDetailActivity extends AppCompatActivity {
                     return;
                 }
 
-                double standardPrice = customPrice;
-                if (!newStdPriceStr.isEmpty()) {
+                // Auto generate SKU if empty, matching ProductDetailActivity
+                if (newCode.isEmpty()) {
+                    newCode = "KK-" + String.format(Locale.getDefault(), "%05d", (int)(System.currentTimeMillis() % 100000));
+                    etNewProductCode.setText(newCode);
+                }
+
+                double importPrice = 0.0;
+                if (!newImportPriceStr.isEmpty()) {
                     try {
-                        String cleanStdStr = newStdPriceStr.replaceAll("[^0-9]", "");
-                        standardPrice = Double.parseDouble(cleanStdStr);
+                        importPrice = Double.parseDouble(newImportPriceStr.replaceAll("[^0-9]", ""));
                     } catch (Exception ignored) {}
                 }
 
-                Product newProd = new Product();
-                newProd.setProduct_name(newName);
-                newProd.setProduct_code(newCode.isEmpty() ? null : newCode);
-                newProd.setSell_price(standardPrice);
-                newProd.setImport_price(0.0);
-                newProd.setStock_quantity(0);
-                newProd.setIs_bundle(false);
+                double standardPrice = customPrice;
+                if (!newStdPriceStr.isEmpty()) {
+                    try {
+                        standardPrice = Double.parseDouble(newStdPriceStr.replaceAll("[^0-9]", ""));
+                    } catch (Exception ignored) {}
+                }
 
-                double finalStandardPrice = standardPrice;
-                firebaseHelper.addProductWithId(newProd, newDocId -> {
-                    CompanyProduct cp = new CompanyProduct(
-                            companyId,
-                            newDocId,
-                            newCode,
-                            newName,
-                            customPrice,
-                            finalStandardPrice,
-                            note
-                    );
-                    cp.setCompany_name(companyName);
+                int stockQuantity = 0;
+                if (!sStock.isEmpty()) {
+                    try {
+                        stockQuantity = Integer.parseInt(sStock);
+                    } catch (Exception ignored) {}
+                }
 
-                    firebaseHelper.addOrUpdateCompanyProduct(companyId, cp,
-                            () -> {
-                                dialog.dismiss();
-                                Toast.makeText(CompanyDetailActivity.this, "Đã tạo sản phẩm mới vào kho và lưu giá riêng!", Toast.LENGTH_SHORT).show();
-                            },
-                            err -> {
-                                btnSave.setEnabled(true);
-                                Toast.makeText(CompanyDetailActivity.this, "Lỗi lưu giá công ty: " + err, Toast.LENGTH_SHORT).show();
-                            });
-                }, err -> {
-                    btnSave.setEnabled(true);
-                    Toast.makeText(CompanyDetailActivity.this, "Lỗi tạo sản phẩm mới: " + err, Toast.LENGTH_SHORT).show();
+                String selectedCategoryId = null;
+                if (spNewProductCategory.getSelectedItemPosition() != AdapterView.INVALID_POSITION
+                        && spNewProductCategory.getSelectedItemPosition() < categoriesList.size()) {
+                    selectedCategoryId = categoriesList.get(spNewProductCategory.getSelectedItemPosition()).getId();
+                }
+
+                final String finalCode = newCode;
+                final double finalImportPrice = importPrice;
+                final double finalStandardPrice = standardPrice;
+                final int finalStockQuantity = stockQuantity;
+                final String finalCategoryId = selectedCategoryId;
+
+                firebaseHelper.checkProductCodeExists(finalCode, querySnapshots -> {
+                    if (querySnapshots != null && !querySnapshots.isEmpty()) {
+                        btnSave.setEnabled(true);
+                        etNewProductCode.setError("Mã SKU này đã tồn tại trong kho!");
+                        Toast.makeText(CompanyDetailActivity.this, "Lỗi: Mã SKU đã tồn tại trong kho!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    Product newProd = new Product();
+                    newProd.setProduct_name(newName);
+                    newProd.setProduct_code(finalCode);
+                    newProd.setCategory_id(finalCategoryId);
+                    newProd.setImport_price(finalImportPrice);
+                    newProd.setSell_price(finalStandardPrice);
+                    newProd.setStock_quantity(finalStockQuantity);
+                    newProd.setNote(productNote);
+                    newProd.setIs_bundle(isBundle);
+                    newProd.setImage_url(currentDialogUploadedImageUrl);
+
+                    firebaseHelper.addProductWithId(newProd, newDocId -> {
+                        CompanyProduct cp = new CompanyProduct(
+                                companyId,
+                                newDocId,
+                                finalCode,
+                                newName,
+                                customPrice,
+                                finalStandardPrice,
+                                note
+                        );
+                        cp.setCompany_name(companyName);
+                        cp.setImage_url(currentDialogUploadedImageUrl);
+
+                        firebaseHelper.addOrUpdateCompanyProduct(companyId, cp,
+                                () -> {
+                                    dialog.dismiss();
+                                    Toast.makeText(CompanyDetailActivity.this, "Đã tạo sản phẩm mới vào kho và lưu giá riêng!", Toast.LENGTH_SHORT).show();
+                                },
+                                err -> {
+                                    btnSave.setEnabled(true);
+                                    Toast.makeText(CompanyDetailActivity.this, "Lỗi lưu giá công ty: " + err, Toast.LENGTH_SHORT).show();
+                                });
+                    }, err -> {
+                        btnSave.setEnabled(true);
+                        Toast.makeText(CompanyDetailActivity.this, "Lỗi tạo sản phẩm mới: " + err, Toast.LENGTH_SHORT).show();
+                    });
                 });
             } else {
                 Product chosenProduct = selectedProductHolder[0];
